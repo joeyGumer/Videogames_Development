@@ -1,0 +1,23 @@
+<!-- Config file for the game -->
+
+<config>
+	<name>My super awesome game with XML</name>
+  <window>
+    <resolution width="640" heigth="480"/>
+    <scale value="1"/>
+    <screen>
+      <fullscreen>false</fullscreen>
+      <borderless>false</borderless>
+      <risezable>false</risezable>
+      <fullscreen_Windowed>false</fullscreen_Windowed>
+    </screen>
+  </window> 
+  <audio></audio>
+  <render></render>
+  <input></input>
+  <textures></textures>
+  <fileSystem>
+    <organization>My Awesome Studio</organization>
+    <appname>My cool game</appname>
+  </fileSystem>
+</config>
