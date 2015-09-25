@@ -19,7 +19,7 @@ j1Window::~j1Window()
 }
 
 // Called before render is available
-bool j1Window::Awake()
+bool j1Window::Awake(pugi::xml_node& config)
 {
 	LOG("Init SDL window & surface");
 	bool ret = true;
