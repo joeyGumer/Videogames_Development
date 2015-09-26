@@ -66,10 +66,8 @@ void j1App::AddModule(j1Module* module)
 // Called before render is available
 bool j1App::Awake()
 {
-	LoadState();
 	bool ret = LoadConfig();
 	
-
 	// self-config
 	title.create(app_config.child("title").child_value());
 	organization.create(app_config.child("organization").child_value());
@@ -85,9 +83,6 @@ bool j1App::Awake()
 			item = item->next;
 		}
 	}
-
-	
-
 	return ret;
 }
 
@@ -161,9 +156,11 @@ void j1App::PrepareUpdate()
 // ---------------------------------------------
 void j1App::FinishUpdate()
 {
+
 	// TODO 1: This is a good place to call load / Save functions
 	if (want_to_load)
 	{
+		LoadState();
 		LoadGameNow();
 		want_to_load = false;
 	}
@@ -287,8 +284,6 @@ const char* j1App::GetOrganization() const
 //These two are called when you say you want to load/save
 bool j1App::Load(const char* file)
 {
-	LOG("Comfirming to Load the Game state");
-
 	want_to_load = true;
 	load_game.create(file);
 	
@@ -307,7 +302,17 @@ bool j1App::Save(const char* file) const
 //These two actually Load/Save
 bool j1App::LoadGameNow()
 {
-	LOG("Loading Game state");
+	//this is for making a function that loads all the modules like the awake
+
+	/*p2List_item<j1Module*>* item;
+	item = modules.start;
+	
+
+	while (item != NULL)
+	{
+		item->data->Load(config.child(item->data->name.GetString()));
+		item = item->next;
+	}*/
 
 	App->render->Load(render_state);
 	return true;
@@ -327,7 +332,7 @@ bool j1App::LoadState()
 
 	char* buf;
 	//the State.xml could be changed by load_game
-	int size = App->fs->Load("State.xml", &buf);
+	int size = App->fs->Load(load_game.GetString(), &buf);
 	pugi::xml_parse_result result = state_file.load_buffer(buf, size);
 	RELEASE(buf);
 
