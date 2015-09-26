@@ -49,12 +49,16 @@ public:
 	// that can be called anytime, even if they 
 	// will one execute by the very end of the frame
 	// Load / Save
+	bool Load(const char* file);
+	bool Save(const char* file)const;
 
 private:
 
 	// Load config file
 	bool LoadConfig();
 
+	//Load state file
+	bool LoadState();
 	// Call modules before each loop iteration
 	void PrepareUpdate();
 
@@ -90,9 +94,14 @@ private:
 	p2List<j1Module*>	modules;
 	uint				frames;
 	float				dt;
+	//for config.XML
 	pugi::xml_document	config_file;
 	pugi::xml_node		config;
 	pugi::xml_node		app_config;
+	//for state.XML
+	pugi::xml_document	state_file;
+	pugi::xml_node		state;
+	pugi::xml_node		render_state;
 	int					argc;
 	char**				args;
 

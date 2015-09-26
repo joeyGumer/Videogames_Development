@@ -66,7 +66,9 @@ void j1App::AddModule(j1Module* module)
 // Called before render is available
 bool j1App::Awake()
 {
+	LoadState();
 	bool ret = LoadConfig();
+	
 
 	// self-config
 	title.create(app_config.child("title").child_value());
@@ -83,6 +85,8 @@ bool j1App::Awake()
 			item = item->next;
 		}
 	}
+
+	
 
 	return ret;
 }
@@ -158,6 +162,17 @@ void j1App::PrepareUpdate()
 void j1App::FinishUpdate()
 {
 	// TODO 1: This is a good place to call load / Save functions
+	if (want_to_load)
+	{
+		LoadGameNow();
+		want_to_load = false;
+	}
+
+	if (want_to_save)
+	{
+		SavegameNow();
+		want_to_load = false;
+	}
 }
 
 // Call modules before each loop iteration
@@ -268,9 +283,67 @@ const char* j1App::GetOrganization() const
 	return organization.GetString();
 }
 
+//Load/Save functions
+//These two are called when you say you want to load/save
+bool j1App::Load(const char* file)
+{
+	LOG("Comfirming to Load the Game state");
+
+	want_to_load = true;
+	load_game.create(file);
+	
+	return true;
+}
+
+bool j1App::Save(const char* file) const
+{
+	LOG("Comfirming to Save the Game state");
+	want_to_save = true;
+	save_game.create(file);
+
+	return true;
+}
+
+//These two actually Load/Save
+bool j1App::LoadGameNow()
+{
+	LOG("Loading Game state");
+
+	App->render->Load(render_state);
+	return true;
+}
+
+bool j1App::SavegameNow() const
+{
+	return true;
+}
 
 // TODO 3: Create a simulation of the xml file to read 
+bool j1App::LoadState()
+{
+	LOG("Loading state.xml");
 
+	bool ret = true;
+
+	char* buf;
+	//the State.xml could be changed by load_game
+	int size = App->fs->Load("State.xml", &buf);
+	pugi::xml_parse_result result = state_file.load_buffer(buf, size);
+	RELEASE(buf);
+
+	if (result == NULL)
+	{
+		LOG("Could not load map xml file state.xml. pugi error: %s", result.description());
+		ret = false;
+	}
+	else
+	{
+		state = state_file.child("state");
+		render_state = state.child("renderer");
+	}
+
+	return ret;
+}
 // TODO 4: Create a method to actually load an xml file
 // then call all the modules to load themselves
 

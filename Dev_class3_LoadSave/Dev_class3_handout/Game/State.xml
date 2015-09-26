@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- State file for the Load/Save of your game -->
+
+<state>
+
+  <renderer>
+    <camera width ="300" height ="200"/>
+  </renderer>
+
+</state>
