@@ -331,7 +331,7 @@ bool j1App::LoadState()
 	bool ret = true;
 
 	char* buf;
-	//the State.xml could be changed by load_game
+	
 	int size = App->fs->Load(load_game.GetString(), &buf);
 	pugi::xml_parse_result result = state_file.load_buffer(buf, size);
 	RELEASE(buf);
@@ -348,6 +348,30 @@ bool j1App::LoadState()
 	}
 
 	return ret;
+}
+
+bool j1App::SaveState()
+{
+	pugi::xml_document data;
+	pugi::xml_node data_root = data.append_child("state");
+
+	p2List_item<j1Module*>* item;
+	item = modules.start;
+	
+	//this cycle, creates all the nodes childs of data_root, that are the module, and at the same time, saves it's state, configuring the xml
+	while (item != NULL)
+	{
+		item->data->Save(data_root.append_child(item->data->name.GetString()));
+		item = item->next;
+	}
+	
+	std::stringstream stream;
+	data.save(stream);
+
+	//Don't know how to do this lul
+	//App->fs->Save(save_game.GetString());
+
+
 }
 // TODO 4: Create a method to actually load an xml file
 // then call all the modules to load themselves

@@ -59,6 +59,8 @@ private:
 
 	//Load state file
 	bool LoadState();
+	bool SaveState();
+
 	// Call modules before each loop iteration
 	void PrepareUpdate();
 
