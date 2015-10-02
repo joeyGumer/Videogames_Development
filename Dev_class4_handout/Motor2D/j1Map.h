@@ -6,12 +6,49 @@
 #include "p2Point.h"
 #include "j1Module.h"
 
+enum orientation
+{
+	ORTHOGONAL,
+	ISOMETRIC,
+	STAGGERED
+};
+
+enum render_order
+{
+	LEFT_UP,
+	LEFT_DOWN,
+	RIGHT_UP,
+	RIGHT_DOWN
+};
 // TODO 2: Create a struct to hold information for a TileSet
 // Ignore Terrain Types and Tile Types for now, but we want the image!
 
+struct tileSet
+{
+	int firstgid;
+
+	p2SString name;
+
+	unsigned int tilewidth;
+	unsigned int tileheight;
+
+
+};
 
 // TODO 1: Create a struct needed to hold the information to Map node
+struct map_node
+{
+	orientation orientation;
+	render_order render_order;
 
+	int width;
+	int height;
+
+	int tilewidth;
+	int tileheight;
+
+	int nextobjectid;
+};
 // ----------------------------------------------------
 class j1Map : public j1Module
 {
