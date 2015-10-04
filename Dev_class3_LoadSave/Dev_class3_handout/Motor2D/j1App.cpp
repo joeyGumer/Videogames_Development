@@ -157,17 +157,17 @@ void j1App::PrepareUpdate()
 void j1App::FinishUpdate()
 {
 
-	// TODO 1: This is a good place to call load / Save functions
-	if (want_to_load)
-	{
-		LoadState();
-		LoadGameNow();
-		want_to_load = false;
-	}
+	// TODO 1: This is a good place to call load / Save functio
 
 	if (want_to_save)
 	{
 		SavegameNow();
+		want_to_save = false;
+	}
+
+	if (want_to_load)
+	{
+		LoadGameNow();
 		want_to_load = false;
 	}
 }
@@ -302,77 +302,139 @@ bool j1App::Save(const char* file) const
 //These two actually Load/Save
 bool j1App::LoadGameNow()
 {
-	//this is for making a function that loads all the modules like the awake
-
-	/*p2List_item<j1Module*>* item;
-	item = modules.start;
+	LOG("Loading %s", load_game.GetString());
 	
+	pugi::xml_document	state_file;
+	pugi::xml_node		state;
+	bool				ret = false;
+	char*				buf;
 
-	while (item != NULL)
+	uint size = App->fs->Load(load_game.GetString(), &buf);
+
+	if (size > 0)
 	{
-		item->data->Load(config.child(item->data->name.GetString()));
-		item = item->next;
-	}*/
+		pugi::xml_parse_result result = state_file.load_buffer(buf, size);
+		RELEASE(buf);
 
-	App->render->Load(render_state);
-	return true;
+		if (result != NULL)
+		{
+			state = state_file.child("state");
+
+			p2List_item<j1Module*>* item = modules.start;
+			ret = true;
+
+			while (item != NULL && ret == true)
+			{
+				item->data->Load(state.child(item->data->name.GetString()));
+				item = item->next;
+			}
+
+			state_file.reset();
+			if (ret == false)
+			{
+				LOG("...loading process interrupted with error on module %s", (item != NULL) ? item->data->name.GetString() : "unknown");
+			}
+		}
+		else
+		{
+			LOG("Could not load map xml file state.xml. pugi error: %s", result.description());
+		}
+	}
+	else
+	{
+		LOG("Could not load game state xml file %s", load_game.GetString());
+	}
+
+	return ret;
+	/*
+	bool ret = false;
+
+	char* buffer;
+	uint size = fs->Load(load_game.GetString(), &buffer);
+
+	if (size > 0)
+	{
+		pugi::xml_document data;
+		pugi::xml_node root;
+
+		pugi::xml_parse_result result = data.load_buffer(buffer, size);
+		RELEASE(buffer);
+
+		if (result != NULL)
+		{
+			LOG("Loading new Game State from %s...", load_game.GetString());
+
+			root = data.child("game_state");
+
+			p2List_item<j1Module*>* item = modules.start;
+			ret = true;
+
+			while (item != NULL && ret == true)
+			{
+				ret = item->data->Load(root.child(item->data->name.GetString()));
+				item = item->next;
+			}
+
+			data.reset();
+			if (ret == true)
+				LOG("...finished loading");
+			else
+				LOG("...loading process interrupted with error on module %s", (item != NULL) ? item->data->name.GetString() : "unknown");
+		}
+		else
+			LOG("Could not parse game state xml file %s. pugi error: %s", load_game.GetString(), result.description());
+	}
+	else
+		LOG("Could not load game state xml file %s", load_game.GetString());
+
+
+	return ret;*/
 }
 
 bool j1App::SavegameNow() const
 {
-	return true;
-}
-
-// TODO 3: Create a simulation of the xml file to read 
-bool j1App::LoadState()
-{
-	LOG("Loading state.xml");
+	LOG("Saving Game State to %s...", save_game.GetString());
 
 	bool ret = true;
 
-	char* buf;
-	
-	int size = App->fs->Load(load_game.GetString(), &buf);
-	pugi::xml_parse_result result = state_file.load_buffer(buf, size);
-	RELEASE(buf);
+	pugi::xml_document data;
+	pugi::xml_node data_root = data.append_child("state");
+	pugi::xml_node node;
 
-	if (result == NULL)
+
+	p2List_item<j1Module*>* item = modules.start;
+
+	//this cycle, creates all the nodes childs of data_root, that are the module, and at the same time, saves it's state, configuring the xml
+	while (item != NULL && ret == true)
 	{
-		LOG("Could not load map xml file state.xml. pugi error: %s", result.description());
-		ret = false;
+		node = data_root.append_child(item->data->name.GetString());
+		ret = item->data->Save(node);
+		item = item->next;
+	}
+
+	if (ret == true)
+	{
+		std::stringstream stream;
+		data.save(stream);
+		LOG("%s", stream.str().c_str());
+		//Don't know how to do this lul
+		App->fs->Save(save_game.GetString(), stream.str().c_str(), stream.str().length());
+		LOG("... finished saving", save_game.GetString());
 	}
 	else
 	{
-		state = state_file.child("state");
-		render_state = state.child("renderer");
+		LOG("Save process halted from an error in module %s", (item != NULL) ? item->data->name.GetString() : "unknown");
 	}
+
+	data.reset();
 
 	return ret;
 }
 
-bool j1App::SaveState()
-{
-	pugi::xml_document data;
-	pugi::xml_node data_root = data.append_child("state");
-
-	p2List_item<j1Module*>* item;
-	item = modules.start;
-	
-	//this cycle, creates all the nodes childs of data_root, that are the module, and at the same time, saves it's state, configuring the xml
-	while (item != NULL)
-	{
-		item->data->Save(data_root.append_child(item->data->name.GetString()));
-		item = item->next;
-	}
-	
-	std::stringstream stream;
-	data.save(stream);
-
-	//Don't know how to do this lul
-	//App->fs->Save(save_game.GetString());
+// TODO 3: Create a simulation of the xml file to read 
 
 
-}
+
 // TODO 4: Create a method to actually load an xml file
 // then call all the modules to load themselves
 

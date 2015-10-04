@@ -4,6 +4,12 @@
 
 <state>
 
+  <file_system></file_system>
+  <input></input>
+  <window></window>
+  <textures></textures>
+  <audio></audio>
+  <scene></scene>
   <renderer>
     <camera width ="300" height ="200"/>
   </renderer>

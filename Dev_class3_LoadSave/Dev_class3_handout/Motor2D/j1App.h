@@ -57,9 +57,7 @@ private:
 	// Load config file
 	bool LoadConfig();
 
-	//Load state file
-	bool LoadState();
-	bool SaveState();
+	
 
 	// Call modules before each loop iteration
 	void PrepareUpdate();
@@ -100,10 +98,7 @@ private:
 	pugi::xml_document	config_file;
 	pugi::xml_node		config;
 	pugi::xml_node		app_config;
-	//for state.XML
-	pugi::xml_document	state_file;
-	pugi::xml_node		state;
-	pugi::xml_node		render_state;
+	
 	int					argc;
 	char**				args;
 
