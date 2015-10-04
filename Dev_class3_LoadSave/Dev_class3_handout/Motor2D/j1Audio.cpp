@@ -3,6 +3,7 @@
 #include "j1App.h"
 #include "j1FileSystem.h"
 #include "j1Audio.h"
+#include "j1Input.h"
 
 #include "SDL/include/SDL.h"
 #include "SDL_mixer\include\SDL_mixer.h"
@@ -10,6 +11,7 @@
 
 j1Audio::j1Audio() : j1Module()
 {
+	volume= 64;
 	music = NULL;
 	name.create("audio");
 }
@@ -50,6 +52,8 @@ bool j1Audio::Awake(pugi::xml_node& config)
 		active = false;
 		ret = true;
 	}
+
+	
 
 	return ret;
 }
@@ -129,9 +133,13 @@ bool j1Audio::PlayMusic(const char* path, float fade_time)
 			}
 		}
 	}
-
 	LOG("Successfully playing %s", path);
+
+	LOG("Setting music volume: %d", Mix_VolumeMusic(volume));
+	
 	return ret;
+
+	
 }
 
 // Load WAV
@@ -171,4 +179,58 @@ bool j1Audio::PlayFx(unsigned int id, int repeat)
 	}
 
 	return ret;
+}
+
+bool j1Audio::DecreaseVolume()
+{
+	if (volume > 0)
+	{
+		volume--;
+		int ret = Mix_VolumeMusic(volume);
+		if (volume == ret)
+		{
+			LOG("error to change volume");
+			return false;
+		}
+		else
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+bool j1Audio::IncreaseVolume()
+{
+	if (volume < 128)
+	{
+		volume++;
+		int ret = Mix_VolumeMusic(volume);
+		if (volume == ret)
+		{
+			LOG("error to change volume");
+			return false;
+		}
+		else
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+bool j1Audio::Load(pugi::xml_node& state)
+{
+	volume = state.child("volume").attribute("value").as_int();
+	
+	Mix_VolumeMusic(volume);
+	return true;
+}
+
+bool j1Audio::Save(pugi::xml_node& state)const
+{
+	pugi::xml_node vol = state.append_child("volume");
+	vol.append_attribute("value") = volume;
+	
+	return true;
 }

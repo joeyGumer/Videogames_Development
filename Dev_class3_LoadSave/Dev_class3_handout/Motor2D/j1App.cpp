@@ -285,7 +285,7 @@ const char* j1App::GetOrganization() const
 bool j1App::Load(const char* file)
 {
 	want_to_load = true;
-	load_game.create(file);
+	load_game.create("save/%s",file);
 	
 	return true;
 }
@@ -296,6 +296,8 @@ bool j1App::Save(const char* file) const
 	want_to_save = true;
 	save_game.create(file);
 
+	
+	
 	return true;
 }
 
@@ -346,49 +348,7 @@ bool j1App::LoadGameNow()
 	}
 
 	return ret;
-	/*
-	bool ret = false;
-
-	char* buffer;
-	uint size = fs->Load(load_game.GetString(), &buffer);
-
-	if (size > 0)
-	{
-		pugi::xml_document data;
-		pugi::xml_node root;
-
-		pugi::xml_parse_result result = data.load_buffer(buffer, size);
-		RELEASE(buffer);
-
-		if (result != NULL)
-		{
-			LOG("Loading new Game State from %s...", load_game.GetString());
-
-			root = data.child("game_state");
-
-			p2List_item<j1Module*>* item = modules.start;
-			ret = true;
-
-			while (item != NULL && ret == true)
-			{
-				ret = item->data->Load(root.child(item->data->name.GetString()));
-				item = item->next;
-			}
-
-			data.reset();
-			if (ret == true)
-				LOG("...finished loading");
-			else
-				LOG("...loading process interrupted with error on module %s", (item != NULL) ? item->data->name.GetString() : "unknown");
-		}
-		else
-			LOG("Could not parse game state xml file %s. pugi error: %s", load_game.GetString(), result.description());
-	}
-	else
-		LOG("Could not load game state xml file %s", load_game.GetString());
-
-
-	return ret;*/
+	
 }
 
 bool j1App::SavegameNow() const
@@ -418,8 +378,9 @@ bool j1App::SavegameNow() const
 		data.save(stream);
 		LOG("%s", stream.str().c_str());
 		//Don't know how to do this lul
+		
 		App->fs->Save(save_game.GetString(), stream.str().c_str(), stream.str().length());
-		LOG("... finished saving", save_game.GetString());
+		LOG("... finished saving %s", save_game.GetString());
 	}
 	else
 	{

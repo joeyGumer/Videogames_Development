@@ -153,15 +153,15 @@ unsigned int j1FileSystem::Save(const char* file, const char* buffer, unsigned i
 
 	PHYSFS_file* fs_file = PHYSFS_openWrite(file);
 
-	if(fs_file != NULL)
+	if (fs_file != NULL)
 	{
 		PHYSFS_sint64 written = PHYSFS_write(fs_file, (const void*)buffer, 1, size);
-		if(written != size)
+		if (written != size)
 			LOG("File System error while writing to file %s: %s\n", file, PHYSFS_getLastError());
 		else
-			ret = (uint) written;
+			ret = (uint)written;
 
-		if(PHYSFS_close(fs_file) == 0)
+		if (PHYSFS_close(fs_file) == 0)
 			LOG("File System error while closing file %s: %s\n", file, PHYSFS_getLastError());
 	}
 	else

@@ -8,7 +8,9 @@
   <input></input>
   <window></window>
   <textures></textures>
-  <audio></audio>
+  <audio>
+    <volume value ="0"/>
+  </audio>
   <scene></scene>
   <renderer>
     <camera width ="300" height ="200"/>

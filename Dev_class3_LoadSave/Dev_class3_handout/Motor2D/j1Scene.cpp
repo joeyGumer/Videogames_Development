@@ -50,10 +50,15 @@ bool j1Scene::Update(float dt)
 	if (App->input->GetKey(SDL_SCANCODE_S) == KEY_DOWN)
 		App->Save("State.xml");
 	
-	/*if (App->input->GetKey(SDL_SCANCODE_S) == KEY_REPEAT)
-		App->render->camera.y -= 1;*/
+	//Homework, this controls audio
+	if (App->input->GetKey(SDL_SCANCODE_N) == KEY_REPEAT)
+		App->audio->DecreaseVolume();
+
+	if (App->input->GetKey(SDL_SCANCODE_M) == KEY_REPEAT)
+		App->audio->IncreaseVolume();
 
 	//camera moves
+
 	if(App->input->GetKey(SDL_SCANCODE_UP) == KEY_REPEAT)
 		App->render->camera.y -= 1;
 
@@ -69,6 +74,8 @@ bool j1Scene::Update(float dt)
 	App->render->Blit(img, 0, 0);
 	return true;
 }
+
+
 
 // Called each loop iteration
 bool j1Scene::PostUpdate()
