@@ -12,7 +12,7 @@ j1Map::j1Map() : j1Module(), map_loaded(false)
 	name.create("map");
 }
 
-// Destructor
+
 j1Map::~j1Map()
 {}
 
@@ -302,7 +302,6 @@ bool j1Map::LoadLayer(pugi::xml_node& node, Layer* layer)
 	int data_size = layer->width*layer->height;
 
 	layer->data = new uint[data_size];
-
 	pugi::xml_node data_node = node.child("data");
 
 	//fills data with zeroes
