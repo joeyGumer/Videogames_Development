@@ -55,8 +55,8 @@ bool j1Map::CleanUp()
 	data.tilesets.clear();
 
 	// TODO 2: clean up all layer data
-	p2List_item<Layer*>* layer_item;
-	layer_item = data.layers.start;
+	p2List_item<TileSet*>* layer_item;
+	layer_item = data.tilesets.start;
 
 	while (layer_item != NULL)
 	{
@@ -64,7 +64,6 @@ bool j1Map::CleanUp()
 		layer_item = layer_item->next;
 	}
 	data.layers.clear();
-
 	// Clean up the pugui tree
 	map_file.reset();
 
@@ -99,9 +98,6 @@ bool j1Map::Load(const char* file_name)
 	pugi::xml_node tileset;
 	for(tileset = map_file.child("map").child("tileset"); tileset && ret; tileset = tileset.next_sibling("tileset"))
 	{
-		//this is the reason why ricard deletes  item->data in a cycle, it's realising these Tileset*, then
-		//what p2List.clear() does, is realising the nodes, but within these, the data were formed by new pointers, so it has to 
-		//be deleted with that cylce, before using clear();
 		TileSet* set = new TileSet();
 
 		if(ret == true)
@@ -114,10 +110,7 @@ bool j1Map::Load(const char* file_name)
 			ret = LoadTilesetImage(tileset, set);
 		}
 
-		if (ret == true)
-		{
-			data.tilesets.add(set);
-		}
+		data.tilesets.add(set);
 	}
 
 	// TODO 4: Iterate all layers and load each of them
@@ -133,33 +126,35 @@ bool j1Map::Load(const char* file_name)
 			data.layers.add(layer_set);
 		}
 	}
+
 	if(ret == true)
 	{
 		LOG("Successfully parsed map XML file: %s", file_name);
 		LOG("width: %d height: %d", data.width, data.height);
 		LOG("tile_width: %d tile_height: %d", data.tile_width, data.tile_height);
 
-		p2List_item<TileSet*>* item = data.tilesets.start;
-		while(item != NULL)
+		p2List_item<TileSet*>* tileset_item = data.tilesets.start;
+		while (tileset_item != NULL)
 		{
-			TileSet* s = item->data;
+			TileSet* s = tileset_item->data;
 			LOG("Tileset ----");
 			LOG("name: %s firstgid: %d", s->name.GetString(), s->firstgid);
 			LOG("tile width: %d tile height: %d", s->tile_width, s->tile_height);
 			LOG("spacing: %d margin: %d", s->spacing, s->margin);
-			item = item->next;
+			tileset_item = tileset_item->next;
 		}
 
 		/* Adapt this code with the names of your variables/structs
 		p2List_item<MapLayer*>* item_layer = data.layers.start;
-		while(item_layer != NULL)
+		while(item_layer != NULL)*/
+		p2List_item<Layer*>* layer_item = data.layers.start;
 		{
-			MapLayer* l = item_layer->data;
+			Layer* l = layer_item->data;
 			LOG("Layer ----");
 			LOG("name: %s", l->name.GetString());
 			LOG("tile width: %d tile height: %d", l->width, l->height);
-			item_layer = item_layer->next;
-		} */
+			layer_item = layer_item->next;
+		} 
 	}
 
 	map_loaded = ret;
@@ -307,7 +302,7 @@ bool j1Map::LoadLayer(pugi::xml_node& node, Layer* layer)
 	int data_size = layer->width*layer->height;
 
 	layer->data = new uint[data_size];
-	
+
 	pugi::xml_node data_node = node.child("data");
 
 	//fills data with zeroes

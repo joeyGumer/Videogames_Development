@@ -4,7 +4,6 @@
 #include "PugiXml/src/pugixml.hpp"
 #include "p2List.h"
 #include "p2Point.h"
-#include "p2SString.h"
 #include "j1Module.h"
 
 // TODO 1: Create a struct for the map layer
@@ -13,7 +12,7 @@ struct Layer
 	p2SString			name;
 	int					width;
 	int					height;
-	uint*				data; 
+	uint*				data;
 };
 // TODO 6: Inside struct for the layer, create a short method to get the value of x,y
 // ----------------------------------------------------
@@ -30,11 +29,9 @@ struct TileSet
 	int					spacing;
 	int					tile_width;
 	int					tile_height;
-	//texture config
 	SDL_Texture*		texture;
 	int					tex_width;
 	int					tex_height;
-	//rectangle to blit config
 	int					num_tiles_width;
 	int					num_tiles_height;
 	int					offset_x;
@@ -55,9 +52,7 @@ struct MapData
 	int					height;
 	int					tile_width;
 	int					tile_height;
-	//this one is optional
 	SDL_Color			background_color;
-	//
 	MapTypes			type;
 	p2List<TileSet*>	tilesets;
 	// TODO 2: Add a list/array of layers to the map!
@@ -96,6 +91,7 @@ private:
 	bool LoadTilesetImage(pugi::xml_node& tileset_node, TileSet* set);
 	// TODO 3: Create a method that loads a single layer
 	bool LoadLayer(pugi::xml_node& node, Layer* layer);
+
 
 public:
 
