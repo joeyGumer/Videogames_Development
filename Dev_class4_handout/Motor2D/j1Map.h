@@ -25,16 +25,16 @@ enum render_order
 struct Tileset
 {
 	//initial attributes
-	uint				firstgid;
+	int				firstgid;
 	p2SString			name;
-	uint				tilewidth;
-	uint				tileheight;
-	uint				spacing;
-	uint				margin;
+	int				tilewidth;
+	int				tileheight;
+	int				spacing;
+	int				margin;
 	//for the total tileset texture
 	SDL_Texture*		texture;
-	uint				texture_width;
-	uint				texture_height;
+	int				texture_width;
+	int				texture_height;
 
 };
 
@@ -44,11 +44,11 @@ struct Map_data
 	float				version;
 	orientation			orientation;
 	render_order		renderorder;
-	uint				width;
-	uint				height;
-	uint				tilewidth;
-	uint				tileheight;
-	uint				nextObjectID;
+	int				width;
+	int				height;
+	int				tilewidth;
+	int				tileheight;
+	int				nextObjectID;
 	p2List<Tileset*>	tilesets;
 };
 // ----------------------------------------------------

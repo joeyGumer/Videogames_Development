@@ -13,13 +13,7 @@ struct Layer
 	p2SString			name;
 	int					width;
 	int					height;
-	uint*		data; 
-
-	~Layer()
-	{
-		delete[] data;
-	}
-	
+	uint*				data; 
 };
 // TODO 6: Inside struct for the layer, create a short method to get the value of x,y
 // ----------------------------------------------------
@@ -36,9 +30,11 @@ struct TileSet
 	int					spacing;
 	int					tile_width;
 	int					tile_height;
+	//texture config
 	SDL_Texture*		texture;
 	int					tex_width;
 	int					tex_height;
+	//rectangle to blit config
 	int					num_tiles_width;
 	int					num_tiles_height;
 	int					offset_x;
@@ -59,7 +55,9 @@ struct MapData
 	int					height;
 	int					tile_width;
 	int					tile_height;
+	//this one is optional
 	SDL_Color			background_color;
+	//
 	MapTypes			type;
 	p2List<TileSet*>	tilesets;
 	// TODO 2: Add a list/array of layers to the map!

@@ -44,18 +44,27 @@ bool j1Map::CleanUp()
 	LOG("Unloading map");
 
 	// Remove all tilesets
-	p2List_item<TileSet*>* item;
-	item = data.tilesets.start;
+	p2List_item<TileSet*>* tileset_item;
+	tileset_item = data.tilesets.start;
 
-	while(item != NULL)
+	while (tileset_item != NULL)
 	{
-		RELEASE(item->data);
-		item = item->next;
+		RELEASE(tileset_item->data);
+		tileset_item = tileset_item->next;
 	}
 	data.tilesets.clear();
 
 	// TODO 2: clean up all layer data
+	p2List_item<Layer*>* layer_item;
+	layer_item = data.layers.start;
+
+	while (layer_item != NULL)
+	{
+		RELEASE(layer_item->data);
+		layer_item = layer_item->next;
+	}
 	data.layers.clear();
+
 	// Clean up the pugui tree
 	map_file.reset();
 
@@ -88,9 +97,11 @@ bool j1Map::Load(const char* file_name)
 
 	// Load all tilesets info ----------------------------------------------
 	pugi::xml_node tileset;
-	pugi::xml_node layer;
 	for(tileset = map_file.child("map").child("tileset"); tileset && ret; tileset = tileset.next_sibling("tileset"))
 	{
+		//this is the reason why ricard deletes  item->data in a cycle, it's realising these Tileset*, then
+		//what p2List.clear() does, is realising the nodes, but within these, the data were formed by new pointers, so it has to 
+		//be deleted with that cylce, before using clear();
 		TileSet* set = new TileSet();
 
 		if(ret == true)
@@ -103,17 +114,24 @@ bool j1Map::Load(const char* file_name)
 			ret = LoadTilesetImage(tileset, set);
 		}
 
-		data.tilesets.add(set);
+		if (ret == true)
+		{
+			data.tilesets.add(set);
+		}
 	}
 
 	// TODO 4: Iterate all layers and load each of them
-	for (layer = map_file.child("map").child("layer"); layer; layer = layer.next_sibling("layer"))
+	pugi::xml_node layer;
+	for (layer = map_file.child("map").child("layer"); layer != NULL && ret; layer = layer.next_sibling("layer"))
 	{
 		Layer* layer_set = new Layer();
 
-		LoadLayer(layer, layer_set);
+		ret = LoadLayer(layer, layer_set);
 
-		data.layers.add(layer_set);
+		if (ret == true)
+		{
+			data.layers.add(layer_set);
+		}
 	}
 	if(ret == true)
 	{
@@ -278,19 +296,22 @@ bool j1Map::LoadTilesetImage(pugi::xml_node& tileset_node, TileSet* set)
 
 bool j1Map::LoadLayer(pugi::xml_node& node, Layer* layer)
 {
+	bool ret = true;
+
 	layer->name.create(node.attribute("name").as_string());
 
 	layer->width = node.attribute("width").as_int();
 	layer->height = node.attribute("height").as_int();
 
-	//the number of gid is height*width
+	//the number of gids is height*width
 	int data_size = layer->width*layer->height;
 
 	layer->data = new uint[data_size];
 	
 	pugi::xml_node data_node = node.child("data");
 
-	memset(layer->data, 0 /*data_node.child("tile").attribute("gid").as_int*/, data_size*sizeof(uint));
+	//fills data with zeroes
+	memset(layer->data, 0, data_size*sizeof(uint));
 
-	return true;
+	return ret;
 }

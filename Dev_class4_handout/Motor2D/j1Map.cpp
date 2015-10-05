@@ -52,6 +52,12 @@ bool j1Map::CleanUp()
 	// from tilesets / map
 	
 	// Remove all tilesets
+	//unload tileset texturesç
+	//don't know if this is needed
+	LOG("Unloading the tilesets' textures before removing them");
+	for (p2List_item<Tileset*>* tileset = map.tilesets.start; tileset != NULL; tileset = tileset->next)
+		App->tex->UnLoad(tileset->data->texture);
+	
 	map.tilesets.clear();
 
 	map_file.reset();
