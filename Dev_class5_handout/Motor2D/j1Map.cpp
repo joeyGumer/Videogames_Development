@@ -33,7 +33,29 @@ void j1Map::Draw()
 		return;
 
 	// TODO 5: Prepare the loop to draw all tilesets + Blit
-	
+	// I don't know why it doesn't work with a for but... anyways, it works
+	p2List_item<TileSet*>* tileset_item = data.tilesets.start;
+	p2List_item<Layer*>* layer_item = data.layers.start;
+
+	while(tileset_item && layer_item)
+	{
+		for (int y = 0; y < data.height; y++)
+		{
+			for (int x = 0; x < data.width; x++)
+			{
+				uint tileID = layer_item->data->Get(x, y);
+				if (tileID != 0)
+				{
+					SDL_Rect tile = tileset_item->data->RectFind(tileID);
+					iPoint pos = MapToWorld(x,y);
+					
+					App->render->Blit(tileset_item->data->texture, pos.x, pos.y, &tile);
+				}
+			}
+		}
+		tileset_item = tileset_item->next;
+		layer_item = layer_item->next;
+	}
 	// TODO 9: Complete the draw function
 }
 
@@ -55,15 +77,17 @@ bool j1Map::CleanUp()
 	data.tilesets.clear();
 
 	// TODO 2: clean up all layer data
-	p2List_item<TileSet*>* layer_item;
-	layer_item = data.tilesets.start;
+	p2List_item<Layer*>* layer_item;
+	layer_item = data.layers.start;
 
 	while (layer_item != NULL)
 	{
+		RELEASE(layer_item->data->data);
 		RELEASE(layer_item->data);
 		layer_item = layer_item->next;
 	}
 	data.layers.clear();
+
 	// Clean up the pugui tree
 	map_file.reset();
 
@@ -153,6 +177,8 @@ bool j1Map::Load(const char* file_name)
 			LOG("Layer ----");
 			LOG("name: %s", l->name.GetString());
 			LOG("tile width: %d tile height: %d", l->width, l->height);
+			LOG("first tile id = %d", layer_item->data->Get(1, 1));
+			
 			layer_item = layer_item->next;
 		} 
 	}
@@ -305,7 +331,21 @@ bool j1Map::LoadLayer(pugi::xml_node& node, Layer* layer)
 	pugi::xml_node data_node = node.child("data");
 
 	//fills data with zeroes
-	memset(layer->data, 0, data_size*sizeof(uint));
+	//memset(layer->data, 1, data_size*sizeof(uint));
+
+	//this seems to work well
+	pugi::xml_node tile = node.child("data").first_child();
+
+	for (int i = 0; i < data_size; i++, tile = tile.next_sibling("tile"))
+	{
+		layer->data[i] = tile.attribute("gid").as_uint();
+	}
 
 	return ret;
+}
+
+iPoint j1Map::MapToWorld(int x, int y) const
+{
+	 iPoint position(x*(data.tile_width), y*(data.tile_height));
+	 return position;
 }

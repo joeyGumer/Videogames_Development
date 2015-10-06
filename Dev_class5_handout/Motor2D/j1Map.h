@@ -13,10 +13,20 @@ struct Layer
 	int					width;
 	int					height;
 	uint*				data;
+
+	//This returns the tile id of the x,y (in tiles) position at the map that is stored at layer data array.
+	//This formula is like this because for each y, we get a full row of tiles done, so to know the integer number of the 
+	//tile we multiply y for the width and we add the actua x,  we get the actual tile  (total tiles registered)
+	uint Get(int x, int y) const;
 };
 // TODO 6: Inside struct for the layer, create a short method to get the value of x,y
 // ----------------------------------------------------
-
+//done inline outside of the struc, just because we are nubs :v
+//this one works
+inline uint Layer::Get(int x, int y) const
+{
+	return data[x + y*width];
+}
 // ----------------------------------------------------
 struct TileSet
 {
@@ -36,6 +46,31 @@ struct TileSet
 	int					num_tiles_height;
 	int					offset_x;
 	int					offset_y;
+
+	SDL_Rect RectFind(uint tileID) const
+	{
+		uint gid = tileID - firstgid;
+		int tile_x;
+		int tile_y;
+		//i'll recomend to write all these formulas on my notebook
+		
+		if (gid >= num_tiles_width)
+		{
+			tile_x = gid % num_tiles_width;
+			tile_y = (gid - tile_x) / num_tiles_width;
+		}
+		else
+		{
+			tile_x = gid;
+			tile_y = 0;
+		}
+		//LOG("tileID = %d, gid = %d, tile x = %d, tile y = %d", tileID, gid, tile_x, tile_y);
+		//pixel position
+		int x = tile_x*(tile_width + margin) + margin;
+		int y = tile_y*(tile_height + spacing) + spacing;
+
+		return{ x, y, tile_width, tile_height};
+	}
 };
 
 enum MapTypes
