@@ -56,8 +56,21 @@ void j1Map::Draw()
 iPoint j1Map::MapToWorld(int x, int y) const
 {
 	iPoint ret(0,0);
+	int world_x, world_y;
 	// TODO 8(old): Create a method that translates x,y coordinates from map positions to world positions
-	ret.create(x*(data.tile_width), y*(data.tile_height));
+	switch (data.type)
+	{
+		case MAPTYPE_ORTHOGONAL:
+			world_x = x*(data.tile_width);
+			world_y = y*(data.tile_height);
+			break;
+		case MAPTYPE_ISOMETRIC:
+			world_x = (x - y)*(data.tile_width / 2) - data.tile_width/2;
+			world_y = (x + y)*(data.tile_height / 2) - data.tile_height / 2;
+			break;
+	}
+
+	ret.create(world_x, world_y);
 	// TODO 1: Add isometric map to world coordinates
 	return ret;
 }
@@ -66,9 +79,34 @@ iPoint j1Map::MapToWorld(int x, int y) const
 iPoint j1Map::WorldToMap(int x, int y) const
 {
 	iPoint ret(0,0);
+	float float_x, float_y;
+	int map_x, map_y;
 	// TODO 2: Add orthographic world to map coordinates
+	switch (data.type)
+	{
+	case MAPTYPE_ORTHOGONAL:
+		//float_x = x / data.tile_width;
+		//float_y = y / data.tile_height;
+		map_x = x/data.tile_width;
+		map_y = y/data.tile_height;
+		break;
+	case MAPTYPE_ISOMETRIC:
+		//float_x = (y / data.tile_height) + (x / data.tile_width);
+		//float_y = (y / data.tile_height) - (x / data.tile_width);
+		map_x = ((y / (data.tile_height/2)) + (x / (data.tile_width/2)))/2;
+		map_y = ((y / (data.tile_height / 2)) - (x / (data.tile_width / 2))) / 2;
+		break;
+	}
+
+	//the isometric isn't precise, it marks well (2,0), (4,0) but (3,0) is marked as (3,1) don't know why
+	//this is int case te position aproximates to the next tile, instead of the one it belongs
+	/*if (map_x > float_x)
+		map_x--;
+	if (map_y > float_y)
+		map_y--;*/
 
 	// TODO 3: Add the case for isometric maps to WorldToMap
+	ret.create(map_x, map_y);
 	return ret;
 }
 
