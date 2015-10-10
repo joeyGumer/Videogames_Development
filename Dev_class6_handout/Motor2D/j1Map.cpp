@@ -36,6 +36,20 @@ void j1Map::Draw()
 	MapLayer* layer = data.layers.start->data; // for now we just use the first layer and tileset
 	TileSet* tileset = data.tilesets.start->data;
 
+	for (int y = 0; y < data.height; y++)
+	{
+		for (int x = 0; x < data.width; x++)
+		{
+			uint tileID = layer->Get(x, y);
+			if (tileID != 0)
+			{
+				SDL_Rect tile = tileset->GetTileRect(tileID);
+				iPoint pos = MapToWorld(x, y);
+
+				App->render->Blit(tileset->texture, pos.x, pos.y, &tile);
+			}
+		}
+	}
 	// TODO 10(old): Complete the draw function
 }
 
@@ -43,7 +57,7 @@ iPoint j1Map::MapToWorld(int x, int y) const
 {
 	iPoint ret(0,0);
 	// TODO 8(old): Create a method that translates x,y coordinates from map positions to world positions
-
+	ret.create(x*(data.tile_width), y*(data.tile_height));
 	// TODO 1: Add isometric map to world coordinates
 	return ret;
 }
@@ -58,10 +72,31 @@ iPoint j1Map::WorldToMap(int x, int y) const
 	return ret;
 }
 
-SDL_Rect TileSet::GetTileRect(int id) const
+SDL_Rect TileSet::GetTileRect(int tileID) const
 {
 	SDL_Rect rect = {0, 0, 0, 0};
 	// TODO 7(old): Create a method that receives a tile id and returns it's Rect
+	uint gid = tileID - firstgid;
+	int tile_x;
+	int tile_y;
+	//i'll recomend to write all these formulas on my notebook
+
+	if (gid >= num_tiles_width)
+	{
+		tile_x = gid % num_tiles_width;
+		tile_y = (gid - tile_x) / num_tiles_width;
+	}
+	else
+	{
+		tile_x = gid;
+		tile_y = 0;
+	}
+	//pixel position
+	int x = tile_x*(tile_width + margin) + margin;
+	int y = tile_y*(tile_height + spacing) + spacing;
+
+	rect = { x, y, tile_width, tile_height };
+
 	return rect;
 }
 

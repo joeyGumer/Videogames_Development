@@ -25,7 +25,7 @@ struct MapLayer
 	// TODO 6 (old): Short function to get the value of x,y
 	inline uint Get(int x, int y) const
 	{
-		return 0;
+		return data[x + y*width];;
 	}
 };
 
