@@ -33,22 +33,29 @@ void j1Map::Draw()
 		return;
 
 	// TODO 5(old): Prepare the loop to draw all tilesets + Blit
-	MapLayer* layer = data.layers.start->data; // for now we just use the first layer and tileset
-	TileSet* tileset = data.tilesets.start->data;
+	
+	//this is because we may need it in the future
+	p2List_item<TileSet*>* tileset = data.tilesets.start;
+	p2List_item<MapLayer*>* layer = data.layers.start;
 
-	for (int y = 0; y < data.height; y++)
+	//for now we just paint all layers
+	while (tileset && layer)
 	{
-		for (int x = 0; x < data.width; x++)
+		for (int y = 0; y < data.height; y++)
 		{
-			uint tileID = layer->Get(x, y);
-			if (tileID != 0)
+			for (int x = 0; x < data.width; x++)
 			{
-				SDL_Rect tile = tileset->GetTileRect(tileID);
-				iPoint pos = MapToWorld(x, y);
+				uint tileID = layer->data->Get(x, y);
+				if (tileID != 0 && layer->data->visible != 0)
+				{
+					SDL_Rect tile = tileset->data->GetTileRect(tileID);
+					iPoint pos = MapToWorld(x, y);
 
-				App->render->Blit(tileset->texture, pos.x, pos.y, &tile);
+					App->render->Blit(tileset->data->texture, pos.x, pos.y, &tile);
+				}
 			}
 		}
+		layer = layer->next;
 	}
 	// TODO 10(old): Complete the draw function
 }
@@ -65,7 +72,7 @@ iPoint j1Map::MapToWorld(int x, int y) const
 			world_y = y*(data.tile_height);
 			break;
 		case MAPTYPE_ISOMETRIC:
-			world_x = (x - y)*(data.tile_width / 2) - data.tile_width/2;
+			world_x = (x - y)*(data.tile_width / 2) - data.tile_width / 2;
 			world_y = (x + y)*(data.tile_height / 2) - data.tile_height / 2;
 			break;
 	}
@@ -381,6 +388,11 @@ bool j1Map::LoadLayer(pugi::xml_node& node, MapLayer* layer)
 	layer->name = node.attribute("name").as_string();
 	layer->width = node.attribute("width").as_int();
 	layer->height = node.attribute("height").as_int();
+
+	//MYTODO: make to detect if a layer is visible or not
+	//if (&(node.find_attribute("visible")) != NULL)
+		//layer->visible = node.attribute("visible").as_int();
+	
 	pugi::xml_node layer_data = node.child("data");
 
 	if(layer_data == NULL)

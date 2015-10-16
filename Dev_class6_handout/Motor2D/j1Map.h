@@ -12,7 +12,9 @@ struct MapLayer
 	p2SString	name;
 	int			width;
 	int			height;
+	int			visible = 1;
 	uint*		data;
+	
 
 	MapLayer() : data(NULL)
 	{}
