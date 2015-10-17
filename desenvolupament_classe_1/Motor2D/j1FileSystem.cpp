@@ -12,13 +12,11 @@
 j1FileSystem::j1FileSystem(const char* game_path) : j1Module()
 {
 	char* base_path = SDL_GetBasePath();
-	LOG("Found base path %s \n", base_path);
-	//have to ask ric, why it doesn't work if i put this in the start
-	if(PHYSFS_init(base_path)!= 0 )
-		LOG("FileSystem inited \n");
+	PHYSFS_init(base_path);
 	SDL_free(base_path);
 	
 	//really important for this, don't forget
+	AddPath(".");
 	AddPath(game_path);
 }
 
@@ -67,9 +65,9 @@ int j1FileSystem::LoadFile(const char* file, char** buffer)
 
 	if (data != NULL)
 	{
-		int size = PHYSFS_fileLength(data);
+		PHYSFS_sint32 size = PHYSFS_fileLength(data);
 		
-		if (size < 0)
+		if (size > 0)
 		{
 			*buffer = new char[size];
 			int objects = PHYSFS_read(data, *buffer, 1, size);
@@ -84,6 +82,7 @@ int j1FileSystem::LoadFile(const char* file, char** buffer)
 			{
 				ret = objects;
 			}
+
 			PHYSFS_close(data);
 		}
 	}
@@ -91,6 +90,14 @@ int j1FileSystem::LoadFile(const char* file, char** buffer)
 		LOG("File System error while opening file %s: %s\n", file, PHYSFS_getLastError());
 
 	return ret;
+
+}
+
+int close_sdl_rwops(SDL_RWops *rw)
+{
+	RELEASE(rw->hidden.mem.base);
+	SDL_FreeRW(rw);
+	return 0;
 }
 
 SDL_RWops* j1FileSystem::LoadFile(const char* file)
@@ -99,7 +106,16 @@ SDL_RWops* j1FileSystem::LoadFile(const char* file)
 	int size = LoadFile(file, &buffer);
 	
 	if (size>0)
-		return SDL_RWFromConstMem(buffer, size);
-
-	return NULL;
+	{ 
+		SDL_RWops* r = SDL_RWFromConstMem(buffer, size);
+		if (r != NULL)
+			r->close = close_sdl_rwops;
+			
+		return r;
+		
+	}
+	else
+		return NULL;
 }
+
+
