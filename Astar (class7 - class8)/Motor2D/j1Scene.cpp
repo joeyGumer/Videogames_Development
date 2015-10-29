@@ -12,6 +12,10 @@
 j1Scene::j1Scene() : j1Module()
 {
 	name.create("scene");
+
+	debug_tex = NULL;
+
+	player.x = player.y = 0;
 }
 
 // Destructor
@@ -30,9 +34,9 @@ bool j1Scene::Awake()
 // Called before the first frame
 bool j1Scene::Start()
 {
-	//App->map->Load("hello2.tmx");
 	App->map->Load("iso.tmx");
-	//App->map->Load("skull.tmx");
+
+	debug_tex = App->tex->Load("textures/path.png");
 	
 	return true;
 }
@@ -46,12 +50,18 @@ bool j1Scene::PreUpdate()
 // Called each loop iteration
 bool j1Scene::Update(float dt)
 {
+	/*
+	//Inputs
+	*/
+
+	//Load and Save
 	if(App->input->GetKey(SDL_SCANCODE_L) == KEY_DOWN)
 		App->LoadGame("save_game.xml");
 
 	if(App->input->GetKey(SDL_SCANCODE_S) == KEY_DOWN)
 		App->SaveGame("save_game.xml");
-
+	
+	//Camera
 	if(App->input->GetKey(SDL_SCANCODE_UP) == KEY_REPEAT)
 		App->render->camera.y += 1;
 
@@ -64,16 +74,33 @@ bool j1Scene::Update(float dt)
 	if(App->input->GetKey(SDL_SCANCODE_RIGHT) == KEY_REPEAT)
 		App->render->camera.x -= 1;
 
+	//Sets debug square
+	if (App->input->GetMouseButtonDown(SDL_BUTTON_LEFT) == KEY_DOWN)
+	{
+		int x, y; 
+		App->input->GetMousePosition(x,y);
+		iPoint p;
+		p = App->map->WorldToMap(x - App->render->camera.x, y - App->render->camera.y);
+
+		player = App->map->MapToWorld(p.x, p.y);
+		LOG("player x = %d player y = %d", player.x, player.y);
+	}
+
+	//--------
+	//Paints Map
 	App->map->Draw();
 
+	//Places Debug square
+	App->render->Blit(debug_tex, player.x, player.y);
+
+	//Shows tile position
 	int x, y;
 	App->input->GetMousePosition(x, y);
 	iPoint map_coordinates = App->map->WorldToMap(x - App->render->camera.x, y - App->render->camera.y);
-	p2SString title("Map:%dx%d Tiles:%dx%d Tilesets:%d Pixels:%d,%d Tile:%d,%d",
+	p2SString title("Map:%dx%d Tiles:%dx%d Tilesets:%d Tile:%d,%d",
 					App->map->data.width, App->map->data.height,
 					App->map->data.tile_width, App->map->data.tile_height,
 					App->map->data.tilesets.count(),
-					x - App->render->camera.x, y - App->render->camera.y,
 					map_coordinates.x, map_coordinates.y);
 
 	App->win->SetTitle(title.GetString());

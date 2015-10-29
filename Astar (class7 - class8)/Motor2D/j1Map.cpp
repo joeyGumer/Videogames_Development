@@ -1,6 +1,7 @@
 #include "p2Defs.h"
 #include "p2Log.h"
 #include "j1App.h"
+#include "j1Input.h"
 #include "j1Render.h"
 #include "j1FileSystem.h"
 #include "j1Textures.h"
@@ -32,104 +33,122 @@ void j1Map::Draw()
 	if(map_loaded == false)
 		return;
 
-	// TODO 5(old): Prepare the loop to draw all tilesets + Blit
-	
-	//this is because we may need it in the future
-	p2List_item<TileSet*>* tileset = data.tilesets.start;
+	// TODO 4: Make sure we draw all the layers and not just the first one
 	p2List_item<MapLayer*>* layer = data.layers.start;
 
-	//for now we just paint all layers
-	while (tileset && layer)
-	{
-		for (int y = 0; y < data.height; y++)
+	while (layer)
+	{	
+		//This makes appear the Navigation Layer
+		if (layer->data->name == "Meta" && App->input->GetKey(SDL_SCANCODE_I) == KEY_DOWN)
 		{
-			for (int x = 0; x < data.width; x++)
+			if (layer->data->properties.GetPropertyValue("Draw") == 0)
+				layer->data->properties.SetPropertyValue("Draw", 1);
+			else
+				layer->data->properties.SetPropertyValue("Draw", 0);
+		}
+		//------------------------------------
+		if (layer->data->properties.GetPropertyValue("Draw"))
+		{
+			for (int y = 0; y < data.height; ++y)
 			{
-				uint tileID = layer->data->Get(x, y);
-				if (tileID != 0 && layer->data->visible != 0)
+				for (int x = 0; x < data.width; ++x)
 				{
-					SDL_Rect tile = tileset->data->GetTileRect(tileID);
-					iPoint pos = MapToWorld(x, y);
+					int tile_id = layer->data->Get(x, y);
+					if (tile_id > 0)
+					{
+						TileSet* tileset = GetTilesetFromTileId(tile_id);
 
-					App->render->Blit(tileset->data->texture, pos.x + tileset->data->offset_x , pos.y + tileset->data->offset_y, &tile);
+						if (tileset != NULL)
+						{
+							SDL_Rect r = tileset->GetTileRect(tile_id);
+							iPoint pos = MapToWorld(x, y);
+
+							App->render->Blit(tileset->texture, pos.x + tileset->offset_x, pos.y + tileset->offset_y, &r);
+						}
+					}
 				}
 			}
 		}
 		layer = layer->next;
 	}
-	// TODO 10(old): Complete the draw function
+}
+
+TileSet* j1Map::GetTilesetFromTileId(int id) const
+{
+	// TODO 3: Complete this method so we pick the right
+	// Tileset based on a tile id
+
+	TileSet* set = data.tilesets.start->data;
+	p2List_item<TileSet*>* set_item = data.tilesets.start;
+
+	while (set_item)
+	{
+		if (id >= set_item->data->firstgid)
+			set = set_item->data;
+
+		set_item = set_item->next;
+	}
+
+	return set;
 }
 
 iPoint j1Map::MapToWorld(int x, int y) const
 {
-	iPoint ret(0,0);
-	int world_x, world_y;
-	// TODO 8(old): Create a method that translates x,y coordinates from map positions to world positions
-	switch (data.type)
+	iPoint ret;
+
+	if(data.type == MAPTYPE_ORTHOGONAL)
 	{
-		case MAPTYPE_ORTHOGONAL:
-			world_x = x*(data.tile_width);
-			world_y = y*(data.tile_height);
-			break;
-		case MAPTYPE_ISOMETRIC:
-			world_x = (x - y)*(data.tile_width / 2) - data.tile_width / 2;
-			world_y = (x + y)*(data.tile_height / 2) - data.tile_height / 2;
-			break;
+		ret.x = x * data.tile_width;
+		ret.y = y * data.tile_height;
+	}
+	else if(data.type == MAPTYPE_ISOMETRIC)
+	{
+		ret.x = int((x - y) * (data.tile_width * 0.5f)) - data.tile_width * 0.5f;
+		ret.y = int((x + y) * (data.tile_height * 0.5f)) - data.tile_height * 0.5f;
+	}
+	else
+	{
+		LOG("Unknown map type");
+		ret.x = x; ret.y = y;
 	}
 
-	ret.create(world_x, world_y);
-	// TODO 1: Add isometric map to world coordinates
 	return ret;
 }
-
 
 iPoint j1Map::WorldToMap(int x, int y) const
 {
 	iPoint ret(0,0);
-	float float_x, float_y;
-	int map_x, map_y;
-	// TODO 2: Add orthographic world to map coordinates
-	switch (data.type)
+
+	if(data.type == MAPTYPE_ORTHOGONAL)
 	{
-	case MAPTYPE_ORTHOGONAL:
-		map_x = x/data.tile_width;
-		map_y = y/data.tile_height;
-		break;
-	case MAPTYPE_ISOMETRIC:
-		map_x = ((y / (data.tile_height/2)) + (x / (data.tile_width/2)))/2;
-		map_y = ((y / (data.tile_height / 2)) - (x / (data.tile_width / 2))) / 2;
-		break;
+		ret.x = x / data.tile_width;
+		ret.y = y / data.tile_height;
 	}
-	// TODO 3: Add the case for isometric maps to WorldToMap
-	ret.create(map_x, map_y);
-	return ret;
-}
-
-SDL_Rect TileSet::GetTileRect(int tileID) const
-{
-	SDL_Rect rect = {0, 0, 0, 0};
-	// TODO 7(old): Create a method that receives a tile id and returns it's Rect
-	uint gid = tileID - firstgid;
-	int tile_x;
-	int tile_y;
-	//i'll recomend to write all these formulas on my notebook
-
-	if (gid >= num_tiles_width)
+	else if(data.type == MAPTYPE_ISOMETRIC)
 	{
-		tile_x = gid % num_tiles_width;
-		tile_y = (gid - tile_x) / num_tiles_width;
+		
+		float half_width = data.tile_width * 0.5f;
+		float half_height = data.tile_height * 0.5f;
+		ret.x = int( (x / half_width + y / half_height) / 2);
+		ret.y = int( (y / half_height - (x / half_width)) / 2);
 	}
 	else
 	{
-		tile_x = gid;
-		tile_y = 0;
+		LOG("Unknown map type");
+		ret.x = x; ret.y = y;
 	}
-	//pixel position
-	int x = tile_x*(tile_width + margin) + margin;
-	int y = tile_y*(tile_height + spacing) + spacing;
 
-	rect = { x, y, tile_width, tile_height };
+	return ret;
+}
 
+SDL_Rect TileSet::GetTileRect(int id) const
+{
+	int relative_id = id - firstgid;
+	SDL_Rect rect;
+	rect.w = tile_width;
+	rect.h = tile_height;
+	rect.x = margin + ((rect.w + spacing) * (relative_id % num_tiles_width));
+	rect.y = margin + ((rect.h + spacing) * (relative_id / num_tiles_width));
 	return rect;
 }
 
@@ -271,6 +290,7 @@ bool j1Map::LoadMap()
 		data.height = map.attribute("height").as_int();
 		data.tile_width = map.attribute("tilewidth").as_int();
 		data.tile_height = map.attribute("tileheight").as_int();
+		data.properties.LoadProperties(map);
 		p2SString bg_color(map.attribute("backgroundcolor").as_string());
 
 		data.background_color.r = 0;
@@ -388,11 +408,7 @@ bool j1Map::LoadLayer(pugi::xml_node& node, MapLayer* layer)
 	layer->name = node.attribute("name").as_string();
 	layer->width = node.attribute("width").as_int();
 	layer->height = node.attribute("height").as_int();
-
-	//MYTODO: make to detect if a layer is visible or not
-	//if (&(node.find_attribute("visible")) != NULL)
-		//layer->visible = node.attribute("visible").as_int();
-	
+	layer->properties.LoadProperties(node);
 	pugi::xml_node layer_data = node.child("data");
 
 	if(layer_data == NULL)
@@ -411,6 +427,69 @@ bool j1Map::LoadLayer(pugi::xml_node& node, MapLayer* layer)
 		{
 			layer->data[i++] = tile.attribute("gid").as_int(0);
 		}
+	}
+
+
+	return ret;
+}
+
+// Load a group of properties from a node and fill a list with it
+bool Properties::LoadProperties(pugi::xml_node& node)
+{
+	bool ret = false;
+	// TODO 6: Fill in the method to fill the custom properties from 
+	// an xml_node
+	for (pugi::xml_node prop = node.child("properties").child("property"); prop; prop = prop.next_sibling("property"))
+	{
+		p2SString name(prop.attribute("name").as_string());
+		int value = prop.attribute("value").as_int();
+	
+		properties_list.add({name, value});
+		
+		ret = true;
+	}
+
+	return ret;
+}
+
+//Defined property so it can be used
+struct Property;
+
+Properties::Property* Properties::FindProperty(const char* name)const
+{
+	p2List_item<Property>* prop = properties_list.start;
+	while (prop)
+	{
+		if ( prop->data.name == name)
+			break;
+		else
+			prop = prop->next;
+	}
+	return &(prop->data);
+}
+
+int Properties::GetPropertyValue(const char* name)const
+{
+	int value = 0;
+
+	Property* prop = FindProperty(name);
+
+	if (prop)
+	{
+		value = prop->value;
+	}
+	return value;
+}
+
+bool Properties::SetPropertyValue(const char* name, const int value)
+{
+	bool ret = false;
+
+	Property* prop = FindProperty(name);
+	if (prop)
+	{
+		prop->value = value;
+		ret = true;
 	}
 
 	return ret;

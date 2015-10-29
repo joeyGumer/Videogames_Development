@@ -7,14 +7,33 @@
 #include "j1Module.h"
 
 // ----------------------------------------------------
+struct Properties
+{
+	// TODO 5: Create a generic structure to hold properties
+	struct Property
+	{
+		p2SString name;
+		int value;
+	};
+
+	p2List<Property> properties_list;
+
+	bool LoadProperties(pugi::xml_node& node);
+	// TODO 7: Our custom properties should have one method
+	// to ask for the value of a custom property
+	Property* FindProperty(const char* name)const;
+	int GetPropertyValue(const char* name)const;
+	bool SetPropertyValue(const char*name, const int value);
+};
+
+// ----------------------------------------------------
 struct MapLayer
 {
 	p2SString	name;
 	int			width;
 	int			height;
-	int			visible = 1;
 	uint*		data;
-	
+	Properties	properties;
 
 	MapLayer() : data(NULL)
 	{}
@@ -24,10 +43,9 @@ struct MapLayer
 		RELEASE(data);
 	}
 
-	// TODO 6 (old): Short function to get the value of x,y
 	inline uint Get(int x, int y) const
 	{
-		return data[x + y*width];
+		return data[(y*width) + x];
 	}
 };
 
@@ -69,6 +87,7 @@ struct MapData
 	MapTypes			type;
 	p2List<TileSet*>	tilesets;
 	p2List<MapLayer*>	layers;
+	Properties			properties;
 };
 
 // ----------------------------------------------------
@@ -93,7 +112,6 @@ public:
 	// Load new map
 	bool Load(const char* path);
 
-	// Coordinate translation methods
 	iPoint MapToWorld(int x, int y) const;
 	iPoint WorldToMap(int x, int y) const;
 
@@ -103,6 +121,8 @@ private:
 	bool LoadTilesetDetails(pugi::xml_node& tileset_node, TileSet* set);
 	bool LoadTilesetImage(pugi::xml_node& tileset_node, TileSet* set);
 	bool LoadLayer(pugi::xml_node& node, MapLayer* layer);
+
+	TileSet* GetTilesetFromTileId(int id) const;
 
 public:
 
