@@ -3,18 +3,19 @@
 
 #include "j1Module.h"
 #include "p2List.h"
+#include "p2Point.h"
 
 struct PathNode
 {
-	PathNode(PathNode* node)
+	PathNode(iPoint& p, PathNode* node)
 	{
+		pos = p;
 		parent = node;
 	}
 	//parent node
 	PathNode*	parent;
 	//position coordinates
-	int			x;
-	int			y;
+	iPoint pos;
 	
 	//important data of the node:
 	//g: cost to arrive to this node (distance run form init)
@@ -44,11 +45,12 @@ public:
 	bool CleanUp();
 
 	// A* pathfinding algorithm
-	bool AStar(PathNode* start, PathNode* goal);
+	bool CreatePath(iPoint& start, iPoint& goal);
 
 public:
 	p2List<PathNode*> open_nodes;
 	p2List<PathNode*> close_nodes;
+	p2List<PathNode*> path;
 };
 
 #endif _J1PATHFINDING_H_
