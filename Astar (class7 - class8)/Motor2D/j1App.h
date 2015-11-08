@@ -14,6 +14,7 @@ class j1Audio;
 class j1FileSystem;
 class j1Scene;
 class j1Map;
+class j1Pathfinding;
 
 class j1App
 {
@@ -85,7 +86,8 @@ public:
 	j1Scene*			scene;
 	j1FileSystem*		fs;
 	j1Map*				map;
-
+	j1Pathfinding*      pf;
+	
 private:
 
 	p2List<j1Module*>	modules;

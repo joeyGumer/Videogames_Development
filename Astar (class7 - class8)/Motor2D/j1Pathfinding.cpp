@@ -1,4 +1,9 @@
+#include "j1App.h"
 #include "j1Pathfinding.h"
+#include "j1Map.h"
+#include "j1Render.h"
+#include "p2Defs.h"
+#include "p2Log.h"
 #include <math.h>
 
 
@@ -23,130 +28,181 @@ bool j1Pathfinding::CleanUp()
 }
 
 
-bool j1Pathfinding::CreatePath(iPoint& start, iPoint& goal)
+bool j1Pathfinding::Astar(iPoint& start, iPoint& goal)
+{
+	bool found = false;
+	
+	if (!IsWalkable(goal))
+	{
+		LOG("Goal Position is not walkable");
+		return found;
+	}
+
+	PathNode* first;
+	first = new PathNode(start, NULL);
+
+	first->g = 0;
+	first->h = abs(goal.x - first->pos.x) + abs(goal.y - first->pos.y);
+	first->f = first->h;
+
+	open_nodes.add(first);
+
+	while (open_nodes.start && found == false)
+	{
+		PathNode* q = FindNext();
+		close_nodes.add(q);
+		found = CreateChilds(q, goal);
+	}
+
+	if (found)
+	{
+		PathNode* way = close_nodes.end->data;
+
+		while (way)
+		{
+			path.add(way);
+			way = way->parent;
+		}
+	}
+	return found;
+}
+
+PathNode* j1Pathfinding::FindNext()
+{
+	p2List_item<PathNode*>* item = open_nodes.start;
+	p2List_item<PathNode*>* node = open_nodes.start;
+
+	while (item)
+	{
+		if (item->data->f < node->data->f)
+			node = item;
+
+		item = item->next;
+	}
+
+	PathNode* q = node->data;
+	open_nodes.del(node);
+	
+	return q;
+}
+
+bool j1Pathfinding::CreateChilds(PathNode* q, iPoint& goal)
 {
 	bool ret = false;
 
-	PathNode* way;
-	way = new PathNode(start, NULL);
-
-	PathNode* finish;
-	finish = new PathNode(goal, NULL);
-	
-	open_nodes.add(way);
-	
-	while (open_nodes.start)
+	for (int i = 0; i < 4; i++)
 	{
+		PathNode* child;
+		child = new PathNode(q->pos, q);
+
+		switch (i)
+		{
+		case 0:
+			child->pos.x++;
+			break;
+		case 1:
+			child->pos.y++;
+			break;
+		case 2:
+			child->pos.x--;
+			break;
+		case 3:
+			child->pos.y--;
+			break;
+		}
+
+		if (child->pos == goal)
+		{
+			ret = true;
+			close_nodes.add(child);
+			break;
+		}
+
+		child->g = q->g + 1;
+		child->h = abs(goal.x - child->pos.x) + abs(goal.y - child->pos.y);
+		child->f = child->g + child->h;
+
 		p2List_item<PathNode*>* item = open_nodes.start;
-		p2List_item<PathNode*>* node = open_nodes.start;
-		PathNode* parent = NULL;
-		
-		//cicle to get the open node with the lowest f and the highest h
+
 		while (item)
 		{
-			if (item->data->f < node->data->f)
-				node->data = item->data;
-
-			/*else if (item->data->f == node->data->f)
+			if (item->data->pos == child->pos && item->data->f <= child->f)
 			{
-				if (item->data->h > node->data->h)
-					node->data = item->data;
-			}*/
+				RELEASE(child);
+				child = NULL;
+				break;
+			}
+			item = item->next;
 		}
 
-		//delete the node from open list and add it to close list
-		parent = node->data;
-		
-		open_nodes.del(node);
-		
+		item = close_nodes.start;
 
-		//create each child
-		for (int i = 0; i < 4; i++)
+		while (item && child)
 		{
-			PathNode* child;
-			child = new PathNode(parent->pos ,parent);
-			
-
-			switch (i)
+			if (item->data->pos == child->pos && item->data->f <= child->f)
 			{
-			case 0:
-				child->pos.x++;
-				break;
-			case 1:
-				child->pos.y++;
-				break;
-			case 2:
-				child->pos.x--;
-				break;
-			case 3:
-				child->pos.y--;
+				RELEASE(child);
+				child = NULL;
 				break;
 			}
-
-			//this only works for 4 directions
-			child->g = parent->g ++;
-
-			//I use the absolute value because if negative, it would give antoher numbers
-			child->h = abs(goal.x - child->pos.x) + abs(goal.y - child->pos.y);
-			child->f = child->g + child->h;
-
-			//if child is the goal, stop the child creating cicle, we find it!
-			if (child->pos == goal)
-			{
-				//has to make something here
-				finish.parent = child->parent;
-				ret = true;
-				break;
-			}
-
-			//TODO : change the PathNode position int x,y to a point, it will be a lot easier to make equivalences
-			//Also, after make it , follow the instructions mentioned at the PDF
-			//I can simplify a lot the code using diferent functions
-			//Review the uses of new, i'm confused about when it's useful to use it and when not;
-
-			//Checks if the node is alredy created at the lists
-			item = open_nodes.start;
-			while (item)
-			{
-				if (item->data->pos == child->pos)
-					delete child;
-
-				item = item->next;
-			}
-
-			item = close_nodes.start;
-			while (item)
-			{
-				if (item->data->pos == child->pos)
-					delete child;
-
-				item = item->next;
-			}
-
-			//Add child to the open  list if don't skipped
-			//maybe i can check here if the child is the goal
-			if (finish.parent)
-				delete child;
-			
-				open_nodes.add(child);
+			item = item->next;
 		}
-			close_nodes.add(parent);
-	}
-	
-	/*Have to do this the good way, it sttores the path nodes to the path list
-	if (ret)
-	{
-		p2List_item<PathNode*>* item = open_nodes.start;
-		while (finish->pos != way->pos)
+
+		if (child)
 		{
-			item
-			path.add(finish)
-
+			bool walkable = IsWalkable(child->pos);
+			if (!walkable)
+			{
+				RELEASE(child);
+				child = NULL;
+			}
 		}
-		path.add
+
+		if (child)
+			open_nodes.add(child);
 	}
-	*/
+
 	return ret;
-		
 }
+
+void j1Pathfinding::ClearLists()
+{
+	p2List_item<PathNode*>* item = open_nodes.start;
+
+	while (item)
+	{
+		if (item->data)
+			RELEASE(item->data);
+		item = item->next;
+	}
+	open_nodes.clear();
+
+	item = close_nodes.start;
+
+	while (item)
+	{
+		RELEASE(item->data);
+		item = item->next;
+	}
+	close_nodes.clear();
+	path.clear();
+}
+
+bool j1Pathfinding::IsWalkable(iPoint& pos)
+{
+	if (pos.x >= App->map->data.width || pos.x < 0 ||
+		pos.y >= App->map->data.height || pos.y <0)
+		return false;
+
+	p2List_item<MapLayer*>* layer = App->map->data.layers.start;
+	while (layer)
+	{
+		if (layer->data->name == "Meta")
+			if (layer->data->Get(pos.x, pos.y) == 0)
+				return true;
+
+		layer = layer->next;
+	}
+	return false;
 	
+}

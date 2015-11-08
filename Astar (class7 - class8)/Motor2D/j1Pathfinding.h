@@ -45,7 +45,12 @@ public:
 	bool CleanUp();
 
 	// A* pathfinding algorithm
-	bool CreatePath(iPoint& start, iPoint& goal);
+	bool Astar(iPoint& start, iPoint& goal);
+	PathNode* FindNext();
+	bool CreateChilds(PathNode* q, iPoint& goal);
+	bool IsWalkable(iPoint& pos);
+	void ClearLists();
+	
 
 public:
 	p2List<PathNode*> open_nodes;

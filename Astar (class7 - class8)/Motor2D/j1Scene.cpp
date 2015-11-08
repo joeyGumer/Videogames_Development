@@ -7,7 +7,9 @@
 #include "j1Render.h"
 #include "j1Window.h"
 #include "j1Map.h"
+#include "j1Pathfinding.h"
 #include "j1Scene.h"
+
 
 j1Scene::j1Scene() : j1Module()
 {
@@ -15,7 +17,9 @@ j1Scene::j1Scene() : j1Module()
 
 	debug_tex = NULL;
 
-	player.x = player.y = 0;
+	start.x = start.y = 0;
+	goal.x = goal.y = 0;
+	click = false;
 }
 
 // Destructor
@@ -75,23 +79,45 @@ bool j1Scene::Update(float dt)
 		App->render->camera.x -= 1;
 
 	//Sets debug square
+	//Does the Pathfinding with A*
 	if (App->input->GetMouseButtonDown(SDL_BUTTON_LEFT) == KEY_DOWN)
 	{
-		int x, y; 
-		App->input->GetMousePosition(x,y);
-		iPoint p;
-		p = App->map->WorldToMap(x - App->render->camera.x, y - App->render->camera.y);
+		if (!click)
+		{
+			goal.x = goal.y = 0;
+			start.x = start.y = 0;
 
-		player = App->map->MapToWorld(p.x, p.y);
-		LOG("player x = %d player y = %d", player.x, player.y);
+			int x, y;
+			App->input->GetMousePosition(x, y);
+			start = App->map->WorldToMap(x - App->render->camera.x, y - App->render->camera.y);
+			click = true;
+		}
+		else
+		{
+			int x, y;
+			App->input->GetMousePosition(x, y);
+			goal = App->map->WorldToMap(x - App->render->camera.x, y - App->render->camera.y);
+			click = false;
+
+			App->pf->ClearLists();
+			App->pf->Astar(start, goal);
+		}
 	}
 
+	
 	//--------
 	//Paints Map
 	App->map->Draw();
 
 	//Places Debug square
-	App->render->Blit(debug_tex, player.x, player.y);
+	iPoint p = App->map->MapToWorld(start.x, start.y);
+	App->render->Blit(debug_tex, p.x, p.y);
+
+	if (!click)
+	{
+		p = App->map->MapToWorld(goal.x, goal.y);
+		App->render->Blit(debug_tex, p.x, p.y);
+	}
 
 	//Shows tile position
 	int x, y;
@@ -103,6 +129,20 @@ bool j1Scene::Update(float dt)
 					App->map->data.tilesets.count(),
 					map_coordinates.x, map_coordinates.y);
 
+	//Draws Debug Path
+	if (App->pf->path.start)
+	{
+		p2List_item<PathNode*>* item = App->pf->path.start;
+
+		while (item)
+		{
+			iPoint pos = App->map->MapToWorld(item->data->pos.x, item->data->pos.y);
+			App->render->Blit(debug_tex, pos.x, pos.y);
+			item = item->next;
+		}
+	}
+
+	
 	App->win->SetTitle(title.GetString());
 	return true;
 }

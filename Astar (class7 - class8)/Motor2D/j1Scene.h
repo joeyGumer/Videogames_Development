@@ -34,8 +34,10 @@ public:
 
 private:
 
-	iPoint       player;
+	iPoint       start;
+	iPoint       goal;
 	SDL_Texture* debug_tex;
+	bool		 click;
 };
 
 #endif // __j1SCENE_H__
