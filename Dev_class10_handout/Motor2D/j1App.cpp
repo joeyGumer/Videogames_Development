@@ -173,12 +173,12 @@ pugi::xml_node j1App::LoadConfig(pugi::xml_document& config_file) const
 // ---------------------------------------------
 void j1App::PrepareUpdate()
 {
+	dt = dt_time.ReadSec();
+	dt_time.Start();
+	
 	frame_count++;
 	last_sec_frame_count++;
 
-	// TODO 4: Calculate the dt: differential time since last frame
-	//not so sure if this is like this
-	dt = dt_time.Read();
 	frame_time.Start();
 }
 
@@ -202,8 +202,7 @@ void j1App::FinishUpdate()
 
 	float avg_fps = float(frame_count) / startup_time.ReadSec();
 	float seconds_since_startup = startup_time.ReadSec();
-	//Formula per saber el temps que s'ha desperar segons el frame_limit (1000/limit) - temps transcorrugut en fer el frame
-	uint32 last_frame_ms = (1000 / frame_limit) - frame_time.Read();
+	int last_frame_ms = (1000 / frame_limit) - frame_time.Read();
 	uint32 frames_on_last_update = prev_last_sec_frame_count;
 
 
@@ -214,13 +213,15 @@ void j1App::FinishUpdate()
 	App->win->SetTitle(title);
 
 	// TODO 2: Use SDL_Delay to make sure you get your capped framerate
-	PERF_START(ptimer);
-	SDL_Delay(last_frame_ms);//Formula per saber el temps que s'ha desperar segons el frame_limit
-	// TODO3: Measure accurately the amount of time it SDL_Delay actually waits compared to what was expected
-	double ptime = ptimer.ReadMs();
-	LOG("We waited for %d milliseconds and got back in %.6f", last_frame_ms, ptime);
-
-	dt_time.Start();
+	//Added this because if the time of the first frame surpases de suposed ms for frame, the wait time will be negative
+	
+	if (last_frame_ms > 0)
+	{
+		//PERF_START(ptimer);
+		SDL_Delay(last_frame_ms);
+		//double ptime = ptimer.ReadMs();
+		//LOG("We waited for %d milliseconds and got back in %.6f", last_frame_ms, ptime);
+	}
 }
 
 // Call modules before each loop iteration
