@@ -107,8 +107,7 @@ PathNode::PathNode() : g(-1), h(-1), pos(-1, -1), parent(NULL)
 {}
 
 PathNode::PathNode(int g, int h, const iPoint& pos,const PathNode* p) : g(g), h(h), pos(pos), parent(p)
-{
-}
+{}
 
 PathNode::PathNode(const PathNode& node) : g(node.g), h(node.h), pos(node.pos), parent(node.parent)
 {}
@@ -185,7 +184,12 @@ int j1PathFinding::CreatePath(const iPoint& origin, const iPoint& destination)
 	{ 
 		p2List_item<PathNode>* tmp = open_nodes.GetNodeLowestScore();
 		//it's changing the tmp->data.parent... it's not even changing it's parent...
-		PathNode q(tmp->data.g, tmp->data.h, tmp->data.pos, tmp->data.parent);
+		PathNode q = tmp->data;		
+		/*q.pos = tmp->data.pos;
+		q.g = tmp->data.g;
+		q.h = tmp->data.h;
+		q.parent = tmp->data.parent;*/
+
 		close_nodes.list.add(q);
 		open_nodes.list.del(tmp);
 

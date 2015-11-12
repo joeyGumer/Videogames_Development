@@ -99,7 +99,6 @@ bool j1Scene::Update(float dt)
 			goal = App->map->WorldToMap(x - App->render->camera.x, y - App->render->camera.y);
 			click = false;
 
-			App->pf->ClearLists();
 			App->pf->Astar(start, goal);
 		}
 	}

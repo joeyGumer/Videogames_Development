@@ -168,7 +168,7 @@ int PathNode::CalculateF(const iPoint& destination)
 int j1PathFinding::CreatePath(const iPoint& origin, const iPoint& destination)
 {
 	int ret = -1;
-
+	
 	// Nice try :)
 
 	return ret;

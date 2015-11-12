@@ -17,8 +17,18 @@ j1Pathfinding::~j1Pathfinding()
 {}
 
 
-bool j1Pathfinding::Awake(pugi::xml_node& node)
+bool j1Pathfinding::SetLayer()
 {
+	p2List_item<MapLayer*>* layer = App->map->data.layers.start;
+	while (layer)
+	{
+		if (layer->data->properties.GetPropertyValue("Navigation") == 1)
+		{
+			navigation_layer = layer->data;
+			break;
+		}
+		layer = layer->next;
+	}
 	return true;
 }
 
@@ -30,11 +40,20 @@ bool j1Pathfinding::CleanUp()
 
 bool j1Pathfinding::Astar(iPoint& start, iPoint& goal)
 {
+	ClearLists();
+	SetLayer();
+
 	bool found = false;
 	
-	if (!IsWalkable(goal))
+	if (!IsWalkable(start) || !IsWalkable(goal))
 	{
 		LOG("Goal Position is not walkable");
+		return found;
+	}
+
+	if (start == goal)
+	{
+		LOG("Start is the goal");
 		return found;
 	}
 
@@ -194,15 +213,9 @@ bool j1Pathfinding::IsWalkable(iPoint& pos)
 		pos.y >= App->map->data.height || pos.y <0)
 		return false;
 
-	p2List_item<MapLayer*>* layer = App->map->data.layers.start;
-	while (layer)
-	{
-		if (layer->data->name == "Meta")
-			if (layer->data->Get(pos.x, pos.y) == 0)
-				return true;
-
-		layer = layer->next;
-	}
-	return false;
 	
+	if (navigation_layer->Get(pos.x, pos.y) == 0)
+		return true;
+	else
+		return false;
 }

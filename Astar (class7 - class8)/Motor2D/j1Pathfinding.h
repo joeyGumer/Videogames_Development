@@ -5,6 +5,8 @@
 #include "p2List.h"
 #include "p2Point.h"
 
+struct MapLayer;
+
 struct PathNode
 {
 	PathNode(iPoint& p, PathNode* node)
@@ -37,7 +39,7 @@ public:
 	virtual ~j1Pathfinding();
 
 	// Called before render is available
-	bool Awake(pugi::xml_node& conf);
+	bool SetLayer();
 	//Have to think how to do it with the update functions
 	// Called before all Updates
 	/*bool PreUpdate();*/
@@ -56,6 +58,8 @@ public:
 	p2List<PathNode*> open_nodes;
 	p2List<PathNode*> close_nodes;
 	p2List<PathNode*> path;
+
+	MapLayer* navigation_layer;
 };
 
 #endif _J1PATHFINDING_H_
