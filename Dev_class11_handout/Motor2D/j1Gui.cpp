@@ -56,10 +56,37 @@ bool j1Gui::CleanUp()
 }
 
 // const getter for atlas
-const SDL_Texture* j1Gui::GetAtlas() const
+SDL_Texture* j1Gui::GetAtlas() const
 {
 	return atlas;
 }
 
+GuiElement* j1Gui::AddGuiImage(iPoint p, SDL_Rect r)
+{
+	GuiImage* image = new GuiImage(p, r);
+	return image;
+}
+
+GuiElement* j1Gui::AddGuiLabel(p2SString t, _TTF_Font* f, iPoint p)
+{
+	GuiLabel* label;
+
+	if (f)
+		label = new GuiLabel(t,f,p);
+	else
+		label = new GuiLabel(t, App->font->default, p);
+	
+	return label;
+}
+
+void GuiImage::Draw()
+{
+	App->render->Blit(App->gui->GetAtlas(), pos.x, pos.y, &rect);
+}
+
+void GuiLabel::Draw()
+{
+	App->render->Blit(App->font->Print(text.GetString()), pos.x, pos.y, NULL);
+}
 // class Gui ---------------------------------------------------
 

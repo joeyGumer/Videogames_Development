@@ -4,8 +4,8 @@
 #include "j1Module.h"
 
 struct SDL_Texture;
-class GuiImage;
-class GuiText;
+class GuiElement;
+
 
 class j1Scene : public j1Module
 {
@@ -36,8 +36,8 @@ public:
 
 private:
 	SDL_Texture* debug_tex;
-	GuiImage* banner;
-	GuiText* text;
+	
+	p2List<GuiElement*> GuiElements;
 };
 
 #endif // __j1SCENE_H__

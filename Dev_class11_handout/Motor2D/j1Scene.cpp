@@ -46,6 +46,8 @@ bool j1Scene::Start()
 
 	// TODO 3: Create the image (rect {485, 829, 328, 103}) and the text "Hello World" as UI elements
 
+	GuiElements.add(App->gui->AddGuiImage({ 350, 60 }, { 485, 829, 328, 103 }));
+	GuiElements.add(App->gui->AddGuiLabel("You are gonna have a Bad Time", NULL, { 420, 45 }));
 
 	return true;
 }
@@ -84,7 +86,9 @@ bool j1Scene::PreUpdate()
 bool j1Scene::Update(float dt)
 {
 	// Gui ---
-	
+	p2List_item<GuiElement*>* item = GuiElements.start;
+	for (; item; item = item->next)
+		item->data->Draw();
 	// -------
 	if(App->input->GetKey(SDL_SCANCODE_L) == KEY_DOWN)
 		App->LoadGame("save_game.xml");
@@ -135,6 +139,8 @@ bool j1Scene::Update(float dt)
 	}
 
 	return true;
+
+	
 }
 
 // Called each loop iteration

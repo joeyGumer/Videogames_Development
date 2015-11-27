@@ -5,63 +5,67 @@
 
 #define CURSOR_WIDTH 2
 struct SDL_Texture;
+struct _TTF_Font;
 // TODO 1: Create your structure of classes
-enum UI_Type
+enum GUI_Type
 {
-	UI_LABEL,
-	UI_IMAGE,
-	UI_BUTTON,
-	UI_INPUTBOX
+	GUI_LABEL,
+	GUI_IMAGE,
+	GUI_BUTTON,
+	GUI_INPUTBOX
 	//UI_CURSOR
 };
 
-class UI_Element
+class GuiElement
 {
 	public:
-		UI_Element();
-		~UI_Element();
+		GuiElement(iPoint p, GUI_Type t) : pos(p), type(t){}
+		GuiElement(iPoint p, SDL_Rect r, GUI_Type t ) : pos(p), rect(r), type(t){}
+		//~GuiElement();
 
-		virtual bool Draw(){ return true; }
+		virtual void Draw(){}
 		virtual bool Update(){ return true; }
 
 	public :
-		UI_Type      type;
-		int			 id;
+		GUI_Type      type;
+		//int			 id;
 		iPoint		 pos;
-		SDL_Texture* tex;
+		SDL_Rect     rect;
 		bool         visible;
 };
 
-class Label : public UI_Element
+class GuiLabel : public GuiElement
 {
 	public : 
-		Label();
-		~Label();
+		GuiLabel(p2SString t, _TTF_Font* f, iPoint p) : GuiElement(p, GUI_LABEL), text(t), font(f){}
+		~GuiLabel();
 
-		bool Draw();
-		bool Update();
+		void Draw();
+		bool Update(){ return true; }
 
 	public:
 		p2SString text;
+		//TODO: have to destroy the texture created for the text
+		_TTF_Font* font;
 };
 
-class Image : public UI_Element
+class GuiImage : public GuiElement
 {
 	public:
-		Image();
-		~Image();
+		GuiImage(iPoint p, SDL_Rect r) :GuiElement(p, r, GUI_IMAGE){}
+		~GuiImage();
 
-		bool Draw();
-		bool Update();
+		void Draw();
+		bool Update(){ return true; }
 };
 
-class Button : public UI_Element
+class GuiButton : public GuiElement
 {
 	public:
-		Button();
-		~Button();
+		GuiButton();
+		~GuiButton();
 
-		bool Draw();
+		void Draw();
 		bool Update();
 		//Utils
 		bool Execute();
@@ -70,23 +74,25 @@ class Button : public UI_Element
 	public:
 		bool isColliding;
 		bool clicked;
+
+		GuiImage image;
 };
 
-class InputBox : public UI_Element
+class GuiInputBox : public GuiElement
 {
 public:
-	InputBox();
-	~InputBox();
+	GuiInputBox();
+	~GuiInputBox();
 
-	bool Draw();
+	void Draw();
 	bool Update();
 	//Utils
 	bool Input();
 
 public:
 	//should this be a Label?
-	Label text;
-	Button button;
+	GuiLabel text;
+	GuiButton button;
 	//and a button?
 };
 
@@ -120,8 +126,10 @@ public:
 
 	// TODO 2: Create the factory methods
 	// Gui creation functions
+	GuiElement* AddGuiImage(iPoint p, SDL_Rect r);
+	GuiElement* AddGuiLabel(p2SString t, _TTF_Font* f, iPoint p);
 
-	const SDL_Texture* GetAtlas() const;
+	SDL_Texture* GetAtlas() const;
 
 private:
 
