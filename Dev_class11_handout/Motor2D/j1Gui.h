@@ -6,7 +6,7 @@
 #define CURSOR_WIDTH 2
 struct SDL_Texture;
 struct _TTF_Font;
-// TODO 1: Create your structure of classes
+
 enum GUI_Type
 {
 	GUI_LABEL,
@@ -19,19 +19,25 @@ enum GUI_Type
 class GuiElement
 {
 	public:
-		GuiElement(iPoint p, GUI_Type t) : pos(p), type(t){}
-		GuiElement(iPoint p, SDL_Rect r, GUI_Type t ) : pos(p), rect(r), type(t){}
-		//~GuiElement();
+		GuiElement(iPoint p, GUI_Type t): pos(p), type(t), mouseIn(false){}
+		GuiElement(iPoint p, SDL_Rect r, GUI_Type t) : pos(p), rect(r), type(t), mouseIn(false){}
+		~GuiElement(){}
 
 		virtual void Draw(){}
-		virtual bool Update(){ return true; }
+		virtual bool Update(iPoint p){ return true; }
+
+		bool CheckCollision(iPoint p);
 
 	public :
-		GUI_Type      type;
-		//int			 id;
+		GUI_Type	 type;
+		//int		 id;
 		iPoint		 pos;
 		SDL_Rect     rect;
 		bool         visible;
+
+		bool		mouseIn;
+
+		p2List<j1Module*> listeners;
 };
 
 class GuiLabel : public GuiElement
@@ -41,7 +47,8 @@ class GuiLabel : public GuiElement
 		~GuiLabel();
 
 		void Draw();
-		bool Update(){ return true; }
+		//this is provisional
+		bool Update(iPoint p){ mouseIn = CheckCollision(p); return true; }
 
 	public:
 		p2SString text;
@@ -56,20 +63,21 @@ class GuiImage : public GuiElement
 		~GuiImage();
 
 		void Draw();
-		bool Update(){ return true; }
+		bool Update(iPoint p){ mouseIn = CheckCollision(p); return true; }
 };
 
 class GuiButton : public GuiElement
 {
 	public:
+		/*
 		GuiButton();
 		~GuiButton();
-
+		*/
 		void Draw();
-		bool Update();
+		bool Update(iPoint p){ mouseIn = CheckCollision(p); return true; }
 		//Utils
-		bool Execute();
-		bool CheckCollision();
+		//bool Execute();
+
 	
 	public:
 		bool isColliding;
@@ -81,11 +89,13 @@ class GuiButton : public GuiElement
 class GuiInputBox : public GuiElement
 {
 public:
+	/*
 	GuiInputBox();
 	~GuiInputBox();
+	*/
 
 	void Draw();
-	bool Update();
+	bool Update(iPoint p){ mouseIn = CheckCollision(p); return true; }
 	//Utils
 	bool Input();
 
@@ -98,6 +108,15 @@ public:
 
 //class Cursor : public 
 
+enum GUI_Event
+{
+	EVENT_MOUSE_CLICK,
+	//don't use EVENT_MOUSE_COLLIDE because it happens on each frame
+	EVENT_MOUSE_ENTER,
+	EVENT_MOUSE_EXIT,
+	//... I'll be expanding this
+
+};
 
 // ---------------------------------------------------
 class j1Gui : public j1Module

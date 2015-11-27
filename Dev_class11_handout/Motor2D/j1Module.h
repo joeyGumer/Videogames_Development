@@ -10,6 +10,9 @@
 #include "PugiXml\src\pugixml.hpp"
 
 class j1App;
+class GUI_Element;
+enum  GUI_Event;
+
 
 class j1Module
 {
@@ -71,6 +74,9 @@ public:
 	{
 		return true;
 	}
+
+	virtual void OnEvent(GUI_Element* element, GUI_Event even)
+	{}
 
 public:
 

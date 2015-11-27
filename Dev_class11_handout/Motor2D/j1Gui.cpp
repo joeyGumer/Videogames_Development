@@ -7,6 +7,10 @@
 #include "j1Input.h"
 #include "j1Gui.h"
 
+#include "SDL/include/SDL.h"
+#include "SDL_image/include/SDL_image.h"
+#pragma comment( lib, "SDL_image/libx86/SDL2_image.lib" )
+
 j1Gui::j1Gui() : j1Module()
 {
 	name.create("gui");
@@ -61,6 +65,15 @@ SDL_Texture* j1Gui::GetAtlas() const
 	return atlas;
 }
 
+bool GuiElement::CheckCollision(iPoint p)
+{
+	bool ret = false;
+	if (p.x > rect.x && p.x < (rect.x + rect.w) && p.y > rect.y && p.y < (rect.y + rect.h))
+		ret = true;
+	
+
+	return ret;
+}
 GuiElement* j1Gui::AddGuiImage(iPoint p, SDL_Rect r)
 {
 	GuiImage* image = new GuiImage(p, r);
@@ -86,7 +99,9 @@ void GuiImage::Draw()
 
 void GuiLabel::Draw()
 {
+	//SDL_Texture* label = App->font->Print(text.GetString());
 	App->render->Blit(App->font->Print(text.GetString()), pos.x, pos.y, NULL);
+	//rect = label->
 }
 // class Gui ---------------------------------------------------
 
