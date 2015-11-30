@@ -7,6 +7,7 @@
 #include "j1Input.h"
 #include "j1Gui.h"
 
+
 #include "SDL/include/SDL.h"
 #include "SDL_image/include/SDL_image.h"
 #pragma comment( lib, "SDL_image/libx86/SDL2_image.lib" )
@@ -64,13 +65,13 @@ bool j1Gui::CleanUp()
 ---GUI Elements
 */
 //Constructors 
-GuiElement::GuiElement(iPoint p, GUI_Type t, j1Module* list = NULL) : pos(p), type(t), listener(list), mouseIn(false)
+GuiElement::GuiElement(iPoint p, GUI_Type t, GuiElement* par = NULL, j1Module* list = NULL): local_pos(p), type(t), parent(par), listener(list), mouseIn(false)
 {}
 
-GuiElement::GuiElement(iPoint p, SDL_Rect r, GUI_Type t, j1Module* list) : pos(p), rect(r), type(t), listener(list), mouseIn(false)
+GuiElement::GuiElement(iPoint p, SDL_Rect r, GUI_Type t, GuiElement* par, j1Module* list) : local_pos(p), parent(par), rect(r), type(t), listener(list), mouseIn(false)
 {}
 
-GuiLabel::GuiLabel(p2SString t, _TTF_Font* f, iPoint p, j1Module* list = NULL) : GuiElement(p, GUI_LABEL, list), text(t), font(f)
+GuiLabel::GuiLabel(p2SString t, _TTF_Font* f, iPoint p, GuiElement* par, j1Module* list = NULL) : GuiElement(p, GUI_LABEL, par, list), text(t), font(f)
 {
 	tex = App->font->Print(text.GetString());
 	rect.w = 0, rect.h = 0;
@@ -78,7 +79,7 @@ GuiLabel::GuiLabel(p2SString t, _TTF_Font* f, iPoint p, j1Module* list = NULL) :
 	rect = { p.x, p.y, rect.w, rect.h };
 }
 
-GuiImage::GuiImage(iPoint p, SDL_Rect r, j1Module* list = NULL) : GuiElement(p, r, GUI_IMAGE, list)
+GuiImage::GuiImage(iPoint p, SDL_Rect r, GuiElement* par, j1Module* list = NULL) : GuiElement(p, r, GUI_IMAGE, par, list)
 {}
 //-----
 
@@ -91,10 +92,10 @@ SDL_Texture* j1Gui::GetAtlas() const
 bool GuiElement::CheckCollision(iPoint p)
 {
 	bool ret = false;
-	if (p.x > pos.x &&
-		p.x < (pos.x + rect.w) &&
-		p.y > pos.y &&
-		p.y < (pos.y + rect.h))
+	if (p.x >  GetScreenPosition().x &&
+		p.x < (GetScreenPosition().x + rect.w) &&
+		p.y >  GetScreenPosition().y &&
+		p.y < (GetScreenPosition().y + rect.h))
 	{
 		ret = true;
 	}
@@ -102,20 +103,20 @@ bool GuiElement::CheckCollision(iPoint p)
 }
 
 //Creators
-GuiElement* j1Gui::AddGuiImage(iPoint p, SDL_Rect r, j1Module* list)
+GuiElement* j1Gui::AddGuiImage(iPoint p, SDL_Rect r, GuiElement* par, j1Module* list)
 {
-	GuiImage* image = new GuiImage(p, r, list);
+	GuiImage* image = new GuiImage(p, r,par, list);
 	return image;
 }
 
-GuiElement* j1Gui::AddGuiLabel(p2SString t, _TTF_Font* f, iPoint p, j1Module* list)
+GuiElement* j1Gui::AddGuiLabel(p2SString t, _TTF_Font* f, iPoint p, GuiElement* par, j1Module* list)
 {
 	GuiLabel* label;
 
 	if (f)
-		label = new GuiLabel(t, f, p, list);
+		label = new GuiLabel(t, f, p, par, list);
 	else
-		label = new GuiLabel(t, App->font->default, p, list);
+		label = new GuiLabel(t, App->font->default, p, par, list);
 	
 	return label;
 }
@@ -124,18 +125,18 @@ GuiElement* j1Gui::AddGuiLabel(p2SString t, _TTF_Font* f, iPoint p, j1Module* li
 //Draw functions
 void GuiImage::Draw()
 {
-	App->render->Blit(App->gui->GetAtlas(), pos.x - App->render->camera.x, pos.y - App->render->camera.y, &rect);
+	App->render->Blit(App->gui->GetAtlas(), GetScreenPosition().x - App->render->camera.x, GetScreenPosition().y - App->render->camera.y, &rect);
 }
 
 void GuiLabel::Draw()
 {
 	//SDL_Texture* label = App->font->Print(text.GetString());
 	tex = App->font->Print(text.GetString());
-	App->render->Blit(tex, pos.x - App->render->camera.x, pos.y - App->render->camera.y, NULL);
+	App->render->Blit(tex, GetScreenPosition().x - App->render->camera.x, GetScreenPosition().y - App->render->camera.y, NULL);
 
 	//This is very warro
 	App->font->CalcSize(text.GetString(), rect.w, rect.h);
-	rect = { pos.x, pos.y, rect.w, rect.h };
+	rect = { GetScreenPosition().x, GetScreenPosition().y, rect.w, rect.h };
 }
 //
 
@@ -158,6 +159,35 @@ bool GuiLabel::Update()
 	return true;
 }
 //
+
+//GUI_Element general functions
+
+iPoint GuiElement::GetLocalPosition()
+{
+	return local_pos;
+}
+
+iPoint GuiElement::GetScreenPosition()
+{
+	if (parent)
+	{
+		iPoint ret;
+		ret.x = local_pos.x + parent->GetScreenPosition().x;
+		ret.y = local_pos.y + parent->GetScreenPosition().y;
+		return ret;
+	}
+
+	return local_pos;
+}
+
+SDL_Rect GuiElement::GetScreenRect()
+{
+	return{ GetScreenPosition().x, GetScreenPosition().y, rect.w, rect.y };
+}
+SDL_Rect GuiElement::GetLocalRect()
+{
+	return{ local_pos.x, local_pos.y, rect.w, rect.y };
+}
 
 bool GuiElement::CheckEvent()
 {

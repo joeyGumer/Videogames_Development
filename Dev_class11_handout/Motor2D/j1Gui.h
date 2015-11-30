@@ -20,8 +20,8 @@ enum GUI_Type
 class GuiElement
 {
 	public:
-		GuiElement(iPoint p, GUI_Type t, j1Module* list);
-		GuiElement(iPoint p, SDL_Rect r, GUI_Type t, j1Module* list);
+		GuiElement(iPoint p, GUI_Type t, GuiElement* par, j1Module* list);
+		GuiElement(iPoint p, SDL_Rect r, GUI_Type t, GuiElement* par, j1Module* list);
 		~GuiElement(){}
 
 		virtual void Draw(){}
@@ -32,20 +32,28 @@ class GuiElement
 		
 
 		//Utils
-		void SetRect(SDL_Rect r){ rect = r; }
+		iPoint GetLocalPosition();
+		iPoint GetScreenPosition();
+		SDL_Rect GetScreenRect();
+		SDL_Rect GetLocalRect();
+		
+		void SetTextureRect(SDL_Rect r){ rect = r; }
 
 
 	public :
 		//Maybe putting a name to identify each element
 		GUI_Type	 type;
 		//int		 id;
-		iPoint		 pos;
-		SDL_Rect     rect;
+		GuiElement*  parent;
 		bool         visible;
-
-		bool		mouseIn;
-
+		bool		 mouseIn;
 		j1Module*    listener;
+
+		//passar a private
+		SDL_Rect     rect;
+
+	private:
+		iPoint		 local_pos;
 		//For now we'll just use one listener
 		//p2List<j1Module*> listeners;
 };
@@ -54,7 +62,7 @@ class GuiLabel : public GuiElement
 {
 	public : 
 		//put constructors at the cpp
-		GuiLabel(p2SString t, _TTF_Font* f, iPoint p, j1Module* list);
+		GuiLabel(p2SString t, _TTF_Font* f, iPoint p, GuiElement* par, j1Module* list);
 		~GuiLabel();
 
 		void Draw();
@@ -73,20 +81,21 @@ class GuiLabel : public GuiElement
 class GuiImage : public GuiElement
 {
 	public:
-		GuiImage(iPoint p, SDL_Rect r, j1Module* list);
+		GuiImage(iPoint p, SDL_Rect r, GuiElement* par, j1Module* list);
 		~GuiImage();
 
 		void Draw();
 		bool Update();
 };
 
-class GuiButton : public GuiElement
+/*class GuiButton : public GuiElement
 {
 	public:
 		/*
 		GuiButton();
 		~GuiButton();
 		*/
+/**
 		void Draw();
 		bool Update();
 		//Utils
@@ -106,7 +115,7 @@ public:
 	/*
 	GuiInputBox();
 	~GuiInputBox();
-	*/
+	
 
 	void Draw();
 	bool Update();
@@ -119,6 +128,7 @@ public:
 	GuiButton button;
 	//and a button?
 };
+*/
 
 //class Cursor : public 
 
@@ -161,8 +171,8 @@ public:
 
 	// TODO 2: Create the factory methods
 	// Gui creation functions
-	GuiElement* AddGuiImage(iPoint p, SDL_Rect r, j1Module* list);
-	GuiElement* AddGuiLabel(p2SString t, _TTF_Font* f, iPoint p, j1Module* list);
+	GuiElement* AddGuiImage(iPoint p, SDL_Rect r, GuiElement* par,j1Module* list);
+	GuiElement* AddGuiLabel(p2SString t, _TTF_Font* f, iPoint p, GuiElement* par, j1Module* list);
 
 	SDL_Texture* GetAtlas() const;
 

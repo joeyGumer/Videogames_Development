@@ -46,8 +46,8 @@ bool j1Scene::Start()
 
 	//Create the image (rect {485, 829, 328, 103}) and the text "Hello World" as UI elements
 
-	GuiElements.add(App->gui->AddGuiImage({ 350, 60 }, { 642, 169, 229, 69 } , this));
-	GuiElements.add(App->gui->AddGuiLabel("Hello World", NULL, { 420, 45 }, this));
+	GuiElements.add(App->gui->AddGuiImage({ 350, 60 }, { 642, 169, 229, 69 } ,NULL, this));
+	GuiElements.add(App->gui->AddGuiLabel("Hello World", NULL, { 420, 45 },NULL, this));
 
 	return true;
 }
@@ -176,20 +176,20 @@ void j1Scene::OnEvent(GuiElement* element, GUI_Event even)
 		switch (even)
 		{
 		case EVENT_MOUSE_LEFTCLICK_DOWN:
-			element->SetRect({ 411, 169, 229, 69 });
+			element->SetTextureRect({ 411, 169, 229, 69 });
 			break;
 		case EVENT_MOUSE_LEFTCLICK_UP:
-			element->SetRect({ 0, 113, 229, 69 });
+			element->SetTextureRect({ 0, 113, 229, 69 });
 			break;
 		case EVENT_MOUSE_RIGHTCLICK_DOWN:
 			break;
 		case EVENT_MOUSE_RIGHTCLICK_UP:
 			break;
 		case EVENT_MOUSE_ENTER:
-			element->SetRect({ 0, 113, 229, 69 });
+			element->SetTextureRect({ 0, 113, 229, 69 });
 			break;
 		case EVENT_MOUSE_EXIT:
-			element->SetRect({ 642, 169, 229, 69 });
+			element->SetTextureRect({ 642, 169, 229, 69 });
 			break;
 		}
 		break;
