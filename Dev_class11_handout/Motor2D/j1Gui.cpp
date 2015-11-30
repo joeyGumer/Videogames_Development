@@ -60,6 +60,28 @@ bool j1Gui::CleanUp()
 	return true;
 }
 
+/*
+---GUI Elements
+*/
+//Constructors 
+GuiElement::GuiElement(iPoint p, GUI_Type t, j1Module* list = NULL) : pos(p), type(t), listener(list), mouseIn(false)
+{}
+
+GuiElement::GuiElement(iPoint p, SDL_Rect r, GUI_Type t, j1Module* list) : pos(p), rect(r), type(t), listener(list), mouseIn(false)
+{}
+
+GuiLabel::GuiLabel(p2SString t, _TTF_Font* f, iPoint p, j1Module* list = NULL) : GuiElement(p, GUI_LABEL, list), text(t), font(f)
+{
+	tex = App->font->Print(text.GetString());
+	rect.w = 0, rect.h = 0;
+	App->font->CalcSize(text.GetString(), rect.w, rect.h);
+	rect = { p.x, p.y, rect.w, rect.h };
+}
+
+GuiImage::GuiImage(iPoint p, SDL_Rect r, j1Module* list = NULL) : GuiElement(p, r, GUI_IMAGE, list)
+{}
+//-----
+
 // const getter for atlas
 SDL_Texture* j1Gui::GetAtlas() const
 {
@@ -78,6 +100,8 @@ bool GuiElement::CheckCollision(iPoint p)
 	}
 	return ret;
 }
+
+//Creators
 GuiElement* j1Gui::AddGuiImage(iPoint p, SDL_Rect r, j1Module* list)
 {
 	GuiImage* image = new GuiImage(p, r, list);
@@ -95,7 +119,9 @@ GuiElement* j1Gui::AddGuiLabel(p2SString t, _TTF_Font* f, iPoint p, j1Module* li
 	
 	return label;
 }
+//-----
 
+//Draw functions
 void GuiImage::Draw()
 {
 	App->render->Blit(App->gui->GetAtlas(), pos.x - App->render->camera.x, pos.y - App->render->camera.y, &rect);
@@ -104,10 +130,16 @@ void GuiImage::Draw()
 void GuiLabel::Draw()
 {
 	//SDL_Texture* label = App->font->Print(text.GetString());
+	tex = App->font->Print(text.GetString());
 	App->render->Blit(tex, pos.x - App->render->camera.x, pos.y - App->render->camera.y, NULL);
-	
-}
 
+	//This is very warro
+	App->font->CalcSize(text.GetString(), rect.w, rect.h);
+	rect = { pos.x, pos.y, rect.w, rect.h };
+}
+//
+
+//Update functions
 bool GuiImage::Update()
 {
 	//put the draw functions here
@@ -125,6 +157,7 @@ bool GuiLabel::Update()
 
 	return true;
 }
+//
 
 bool GuiElement::CheckEvent()
 {
@@ -141,6 +174,18 @@ bool GuiElement::CheckEvent()
 		{
 			mouseIn = false;
 			listener->OnEvent(this, EVENT_MOUSE_EXIT);
+		}
+
+		if (collision)
+		{
+			if (App->input->GetMouseButtonDown(SDL_BUTTON_LEFT) == KEY_DOWN)
+				listener->OnEvent(this, EVENT_MOUSE_LEFTCLICK_DOWN);
+			if (App->input->GetMouseButtonDown(SDL_BUTTON_LEFT) == KEY_UP)
+				listener->OnEvent(this, EVENT_MOUSE_LEFTCLICK_UP);
+			if (App->input->GetMouseButtonDown(SDL_BUTTON_LEFT) == KEY_DOWN)
+				listener->OnEvent(this, EVENT_MOUSE_RIGHTCLICK_DOWN);
+			if (App->input->GetMouseButtonDown(SDL_BUTTON_LEFT) == KEY_UP)
+				listener->OnEvent(this, EVENT_MOUSE_RIGHTCLICK_UP);
 		}
 	}
 

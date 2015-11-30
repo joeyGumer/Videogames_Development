@@ -20,8 +20,8 @@ enum GUI_Type
 class GuiElement
 {
 	public:
-		GuiElement(iPoint p, GUI_Type t, j1Module* list = NULL): pos(p), type(t), listener(list), mouseIn(false){}
-		GuiElement(iPoint p, SDL_Rect r, GUI_Type t, j1Module* list) : pos(p), rect(r), type(t), listener(list),  mouseIn(false){}
+		GuiElement(iPoint p, GUI_Type t, j1Module* list);
+		GuiElement(iPoint p, SDL_Rect r, GUI_Type t, j1Module* list);
 		~GuiElement(){}
 
 		virtual void Draw(){}
@@ -54,16 +54,15 @@ class GuiLabel : public GuiElement
 {
 	public : 
 		//put constructors at the cpp
-		GuiLabel(p2SString t, _TTF_Font* f, iPoint p, j1Module* list = NULL) : GuiElement(p, GUI_LABEL, list), text(t), font(f)
-		{
-			tex = App->font->Print(text.GetString());
-		}
+		GuiLabel(p2SString t, _TTF_Font* f, iPoint p, j1Module* list);
 		~GuiLabel();
 
 		void Draw();
 		//this is provisional
 		bool Update();
 
+		//Utils
+		void SetText(p2SString t){ text = t; }
 	public:
 		p2SString text;
 		//TODO: have to destroy the texture created for the text
@@ -74,7 +73,7 @@ class GuiLabel : public GuiElement
 class GuiImage : public GuiElement
 {
 	public:
-		GuiImage(iPoint p, SDL_Rect r, j1Module* list = NULL) :GuiElement(p, r, GUI_IMAGE, list){}
+		GuiImage(iPoint p, SDL_Rect r, j1Module* list);
 		~GuiImage();
 
 		void Draw();
@@ -125,8 +124,10 @@ public:
 
 enum GUI_Event
 {
-	EVENT_MOUSE_CLICK,
-	//don't use EVENT_MOUSE_COLLIDE because it happens on each frame
+	EVENT_MOUSE_LEFTCLICK_DOWN,
+	EVENT_MOUSE_LEFTCLICK_UP,
+	EVENT_MOUSE_RIGHTCLICK_DOWN,
+	EVENT_MOUSE_RIGHTCLICK_UP,
 	EVENT_MOUSE_ENTER,
 	EVENT_MOUSE_EXIT,
 	//... I'll be expanding this
