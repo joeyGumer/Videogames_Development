@@ -11,6 +11,7 @@
 #include "SDL_image/include/SDL_image.h"
 #pragma comment( lib, "SDL_image/libx86/SDL2_image.lib" )
 
+
 j1Gui::j1Gui() : j1Module()
 {
 	name.create("gui");
@@ -68,40 +69,83 @@ SDL_Texture* j1Gui::GetAtlas() const
 bool GuiElement::CheckCollision(iPoint p)
 {
 	bool ret = false;
-	if (p.x > rect.x && p.x < (rect.x + rect.w) && p.y > rect.y && p.y < (rect.y + rect.h))
+	if (p.x > pos.x &&
+		p.x < (pos.x + rect.w) &&
+		p.y > pos.y &&
+		p.y < (pos.y + rect.h))
+	{
 		ret = true;
-	
-
+	}
 	return ret;
 }
-GuiElement* j1Gui::AddGuiImage(iPoint p, SDL_Rect r)
+GuiElement* j1Gui::AddGuiImage(iPoint p, SDL_Rect r, j1Module* list)
 {
-	GuiImage* image = new GuiImage(p, r);
+	GuiImage* image = new GuiImage(p, r, list);
 	return image;
 }
 
-GuiElement* j1Gui::AddGuiLabel(p2SString t, _TTF_Font* f, iPoint p)
+GuiElement* j1Gui::AddGuiLabel(p2SString t, _TTF_Font* f, iPoint p, j1Module* list)
 {
 	GuiLabel* label;
 
 	if (f)
-		label = new GuiLabel(t,f,p);
+		label = new GuiLabel(t, f, p, list);
 	else
-		label = new GuiLabel(t, App->font->default, p);
+		label = new GuiLabel(t, App->font->default, p, list);
 	
 	return label;
 }
 
 void GuiImage::Draw()
 {
-	App->render->Blit(App->gui->GetAtlas(), pos.x, pos.y, &rect);
+	App->render->Blit(App->gui->GetAtlas(), pos.x - App->render->camera.x, pos.y - App->render->camera.y, &rect);
 }
 
 void GuiLabel::Draw()
 {
 	//SDL_Texture* label = App->font->Print(text.GetString());
-	App->render->Blit(App->font->Print(text.GetString()), pos.x, pos.y, NULL);
-	//rect = label->
+	App->render->Blit(tex, pos.x - App->render->camera.x, pos.y - App->render->camera.y, NULL);
+	
 }
+
+bool GuiImage::Update()
+{
+	//put the draw functions here
+	Draw();
+	CheckEvent();
+	
+	return true;
+}
+
+bool GuiLabel::Update()
+{
+	//put the draw functions here
+	Draw();
+	CheckEvent();
+
+	return true;
+}
+
+bool GuiElement::CheckEvent()
+{
+	bool collision = CheckCollision(App->input->GetMousePosition());
+
+	if (listener)
+	{
+		if (collision && !mouseIn)
+		{
+			mouseIn = true;
+			listener->OnEvent(this, EVENT_MOUSE_ENTER);
+		}
+		else if (!collision && mouseIn)
+		{
+			mouseIn = false;
+			listener->OnEvent(this, EVENT_MOUSE_EXIT);
+		}
+	}
+
+	return true;
+}
+
 // class Gui ---------------------------------------------------
 

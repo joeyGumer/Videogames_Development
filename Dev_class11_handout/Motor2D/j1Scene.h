@@ -34,6 +34,9 @@ public:
 	// Called before quitting
 	bool CleanUp();
 
+	//Called on certain event
+	void OnEvent(GuiElement* element, GUI_Event even);
+
 private:
 	SDL_Texture* debug_tex;
 	

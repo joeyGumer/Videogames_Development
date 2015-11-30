@@ -7,6 +7,7 @@
 struct SDL_Texture;
 struct _TTF_Font;
 
+
 enum GUI_Type
 {
 	GUI_LABEL,
@@ -19,16 +20,23 @@ enum GUI_Type
 class GuiElement
 {
 	public:
-		GuiElement(iPoint p, GUI_Type t): pos(p), type(t), mouseIn(false){}
-		GuiElement(iPoint p, SDL_Rect r, GUI_Type t) : pos(p), rect(r), type(t), mouseIn(false){}
+		GuiElement(iPoint p, GUI_Type t, j1Module* list = NULL): pos(p), type(t), listener(list), mouseIn(false){}
+		GuiElement(iPoint p, SDL_Rect r, GUI_Type t, j1Module* list) : pos(p), rect(r), type(t), listener(list),  mouseIn(false){}
 		~GuiElement(){}
 
 		virtual void Draw(){}
-		virtual bool Update(iPoint p){ return true; }
+		virtual bool Update(){ return true; }
 
 		bool CheckCollision(iPoint p);
+		bool CheckEvent();
+		
+
+		//Utils
+		void SetRect(SDL_Rect r){ rect = r; }
+
 
 	public :
+		//Maybe putting a name to identify each element
 		GUI_Type	 type;
 		//int		 id;
 		iPoint		 pos;
@@ -37,33 +45,40 @@ class GuiElement
 
 		bool		mouseIn;
 
-		p2List<j1Module*> listeners;
+		j1Module*    listener;
+		//For now we'll just use one listener
+		//p2List<j1Module*> listeners;
 };
 
 class GuiLabel : public GuiElement
 {
 	public : 
-		GuiLabel(p2SString t, _TTF_Font* f, iPoint p) : GuiElement(p, GUI_LABEL), text(t), font(f){}
+		//put constructors at the cpp
+		GuiLabel(p2SString t, _TTF_Font* f, iPoint p, j1Module* list = NULL) : GuiElement(p, GUI_LABEL, list), text(t), font(f)
+		{
+			tex = App->font->Print(text.GetString());
+		}
 		~GuiLabel();
 
 		void Draw();
 		//this is provisional
-		bool Update(iPoint p){ mouseIn = CheckCollision(p); return true; }
+		bool Update();
 
 	public:
 		p2SString text;
 		//TODO: have to destroy the texture created for the text
 		_TTF_Font* font;
+		SDL_Texture* tex;
 };
 
 class GuiImage : public GuiElement
 {
 	public:
-		GuiImage(iPoint p, SDL_Rect r) :GuiElement(p, r, GUI_IMAGE){}
+		GuiImage(iPoint p, SDL_Rect r, j1Module* list = NULL) :GuiElement(p, r, GUI_IMAGE, list){}
 		~GuiImage();
 
 		void Draw();
-		bool Update(iPoint p){ mouseIn = CheckCollision(p); return true; }
+		bool Update();
 };
 
 class GuiButton : public GuiElement
@@ -74,7 +89,7 @@ class GuiButton : public GuiElement
 		~GuiButton();
 		*/
 		void Draw();
-		bool Update(iPoint p){ mouseIn = CheckCollision(p); return true; }
+		bool Update();
 		//Utils
 		//bool Execute();
 
@@ -95,7 +110,7 @@ public:
 	*/
 
 	void Draw();
-	bool Update(iPoint p){ mouseIn = CheckCollision(p); return true; }
+	bool Update();
 	//Utils
 	bool Input();
 
@@ -145,8 +160,8 @@ public:
 
 	// TODO 2: Create the factory methods
 	// Gui creation functions
-	GuiElement* AddGuiImage(iPoint p, SDL_Rect r);
-	GuiElement* AddGuiLabel(p2SString t, _TTF_Font* f, iPoint p);
+	GuiElement* AddGuiImage(iPoint p, SDL_Rect r, j1Module* list);
+	GuiElement* AddGuiLabel(p2SString t, _TTF_Font* f, iPoint p, j1Module* list);
 
 	SDL_Texture* GetAtlas() const;
 

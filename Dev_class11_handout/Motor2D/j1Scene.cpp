@@ -46,8 +46,8 @@ bool j1Scene::Start()
 
 	//Create the image (rect {485, 829, 328, 103}) and the text "Hello World" as UI elements
 
-	GuiElements.add(App->gui->AddGuiImage({ 350, 60 }, { 485, 829, 328, 103 }));
-	GuiElements.add(App->gui->AddGuiLabel("You are gonna have a Bad Time", NULL, { 420, 45 }));
+	GuiElements.add(App->gui->AddGuiImage({ 350, 60 }, { 485, 829, 328, 103 }, this));
+	GuiElements.add(App->gui->AddGuiLabel("You are gonna have a Bad Time", NULL, { 420, 45 }, this));
 
 	return true;
 }
@@ -85,10 +85,7 @@ bool j1Scene::PreUpdate()
 // Called each loop iteration
 bool j1Scene::Update(float dt)
 {
-	// Gui ---
-	p2List_item<GuiElement*>* item = GuiElements.start;
-	for (; item; item = item->next)
-		item->data->Draw();
+
 	// -------
 	if(App->input->GetKey(SDL_SCANCODE_L) == KEY_DOWN)
 		App->LoadGame("save_game.xml");
@@ -138,6 +135,13 @@ bool j1Scene::Update(float dt)
 		App->render->Blit(debug_tex, pos.x, pos.y);
 	}
 
+
+	// Gui ---
+	p2List_item<GuiElement*>* item = GuiElements.start;
+	for (; item; item = item->next)
+		item->data->Update();
+		
+
 	return true;
 
 	
@@ -160,4 +164,40 @@ bool j1Scene::CleanUp()
 	LOG("Freeing scene");
 
 	return true;
+}
+
+void j1Scene::OnEvent(GuiElement* element, GUI_Event even)
+{
+	//switch(Gui_Type), there's a different reaction depending on the type
+	//There will be a name differentiation here
+	switch (element->type)
+	{
+	case GUI_IMAGE:
+		switch (even)
+		{
+		case EVENT_MOUSE_CLICK:
+			break;
+		case EVENT_MOUSE_ENTER:
+			LOG("Mouse In");
+			break;
+		case EVENT_MOUSE_EXIT:
+			LOG("Mouse Out");
+			break;
+		}
+		break;
+
+	case GUI_LABEL:
+		switch (even)
+		{
+		case EVENT_MOUSE_CLICK:
+			break;
+		case EVENT_MOUSE_ENTER:
+			LOG("Mouse In");
+			break;
+		case EVENT_MOUSE_EXIT:
+			LOG("Mouse Out");
+			break;
+		}
+		break;
+	}
 }
