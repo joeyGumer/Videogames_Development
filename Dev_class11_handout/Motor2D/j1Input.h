@@ -69,6 +69,8 @@ public:
 	//Added for big utility
 	iPoint GetMousePosition();
 	void GetMousePosition(int &x, int &y);
+	
+	iPoint GetMouseMotion();
 	void GetMouseMotion(int& x, int& y);
 
 private:

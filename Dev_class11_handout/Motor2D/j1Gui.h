@@ -27,8 +27,10 @@ class GuiElement
 		virtual void Draw(){}
 		virtual bool Update(){ return true; }
 
+		//Utils
 		bool CheckCollision(iPoint p);
 		bool CheckEvent();
+		void DrawDebug();
 		
 
 		//Utils
@@ -36,8 +38,10 @@ class GuiElement
 		iPoint GetScreenPosition();
 		SDL_Rect GetScreenRect();
 		SDL_Rect GetLocalRect();
+		void SetLocalPosition(iPoint p);
 		
-		void SetTextureRect(SDL_Rect r){ rect = r; }
+		void SetTextureRect(SDL_Rect r){ tex_rect = r; }
+		void SetLocalRect(SDL_Rect r){ local_rect = r; }
 
 
 	public :
@@ -47,13 +51,15 @@ class GuiElement
 		GuiElement*  parent;
 		bool         visible;
 		bool		 mouseIn;
+		//it can be mouseIn but for sure, i put a different variable, "selected"
+		bool         selected;
 		j1Module*    listener;
 
 		//passar a private
-		SDL_Rect     rect;
+		SDL_Rect     tex_rect;
 
 	private:
-		iPoint		 local_pos;
+		SDL_Rect     local_rect;
 		//For now we'll just use one listener
 		//p2List<j1Module*> listeners;
 };
@@ -61,7 +67,7 @@ class GuiElement
 class GuiLabel : public GuiElement
 {
 	public : 
-		//put constructors at the cpp
+		//TODO: Manage the font size
 		GuiLabel(p2SString t, _TTF_Font* f, iPoint p, GuiElement* par, j1Module* list);
 		~GuiLabel();
 
@@ -71,6 +77,7 @@ class GuiLabel : public GuiElement
 
 		//Utils
 		void SetText(p2SString t){ text = t; }
+	
 	public:
 		p2SString text;
 		//TODO: have to destroy the texture created for the text
@@ -136,6 +143,7 @@ enum GUI_Event
 {
 	EVENT_MOUSE_LEFTCLICK_DOWN,
 	EVENT_MOUSE_LEFTCLICK_UP,
+	EVENT_MOUSE_LEFTCLICK_REPEAT,
 	EVENT_MOUSE_RIGHTCLICK_DOWN,
 	EVENT_MOUSE_RIGHTCLICK_UP,
 	EVENT_MOUSE_ENTER,
@@ -169,11 +177,14 @@ public:
 	// Called before quitting
 	bool CleanUp();
 
-	// TODO 2: Create the factory methods
+	
+	
 	// Gui creation functions
-	GuiElement* AddGuiImage(iPoint p, SDL_Rect r, GuiElement* par,j1Module* list);
-	GuiElement* AddGuiLabel(p2SString t, _TTF_Font* f, iPoint p, GuiElement* par, j1Module* list);
+	GuiImage* AddGuiImage(iPoint p, SDL_Rect r, GuiElement* par,j1Module* list);
+	GuiLabel* AddGuiLabel(p2SString t, _TTF_Font* f, iPoint p, GuiElement* par, j1Module* list);
 
+	//Get selected element
+	void FindSelectedElement(p2List<GuiElement*> list);
 	SDL_Texture* GetAtlas() const;
 
 private:

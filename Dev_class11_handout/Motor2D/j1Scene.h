@@ -5,7 +5,8 @@
 
 struct SDL_Texture;
 class GuiElement;
-
+class GuiLabel;
+class GuiImage;
 
 class j1Scene : public j1Module
 {
@@ -39,8 +40,16 @@ public:
 
 private:
 	SDL_Texture* debug_tex;
-	
-	p2List<GuiElement*> GuiElements;
+	bool debug_gui;
+
+	bool dragging;
+	p2List<GuiElement*> gui_elements;
+
+	//Scene Elements
+	GuiImage* window;
+	GuiImage* button;
+	GuiLabel* button_title;
+	GuiLabel* window_title;
 };
 
 #endif // __j1SCENE_H__
