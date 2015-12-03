@@ -65,18 +65,24 @@ bool j1Gui::CleanUp()
 ---GUI Elements
 */
 //Constructors 
-GuiElement::GuiElement(iPoint p, GUI_Type t, GuiElement* par = NULL, j1Module* list = NULL): local_pos(p), type(t), parent(par), listener(list), mouseIn(false)
-{}
+//May i change this in the future for the rect
+GuiElement::GuiElement(iPoint p, GUI_Type t, GuiElement* par = NULL, j1Module* list = NULL): type(t), parent(par), listener(list), mouseIn(false)
+{
+	local_rect = { p.x, p.y, tex_rect.w, tex_rect.h };
+}
 
-GuiElement::GuiElement(iPoint p, SDL_Rect r, GUI_Type t, GuiElement* par, j1Module* list) : local_pos(p), parent(par), rect(r), type(t), listener(list), mouseIn(false)
-{}
+GuiElement::GuiElement(iPoint p, SDL_Rect r, GUI_Type t, GuiElement* par, j1Module* list) : parent(par), tex_rect(r), type(t), listener(list), mouseIn(false)
+{
+	local_rect = { p.x, p.y, tex_rect.w, tex_rect.h };
+}
 
 GuiLabel::GuiLabel(p2SString t, _TTF_Font* f, iPoint p, GuiElement* par, j1Module* list = NULL) : GuiElement(p, GUI_LABEL, par, list), text(t), font(f)
 {
+	//Have to polish the texture sistem in the label
 	tex = App->font->Print(text.GetString());
-	rect.w = 0, rect.h = 0;
-	App->font->CalcSize(text.GetString(), rect.w, rect.h);
-	rect = { p.x, p.y, rect.w, rect.h };
+	tex_rect = { 0, 0, 0, 0 };
+	App->font->CalcSize(text.GetString(), tex_rect.w, tex_rect.h);
+	SetLocalRect({ p.x, p.y, tex_rect.w, tex_rect.h });
 }
 
 GuiImage::GuiImage(iPoint p, SDL_Rect r, GuiElement* par, j1Module* list = NULL) : GuiElement(p, r, GUI_IMAGE, par, list)
@@ -93,9 +99,9 @@ bool GuiElement::CheckCollision(iPoint p)
 {
 	bool ret = false;
 	if (p.x >  GetScreenPosition().x &&
-		p.x < (GetScreenPosition().x + rect.w) &&
+		p.x < (GetScreenPosition().x + local_rect.w) &&
 		p.y >  GetScreenPosition().y &&
-		p.y < (GetScreenPosition().y + rect.h))
+		p.y < (GetScreenPosition().y + local_rect.h))
 	{
 		ret = true;
 	}
@@ -103,13 +109,13 @@ bool GuiElement::CheckCollision(iPoint p)
 }
 
 //Creators
-GuiElement* j1Gui::AddGuiImage(iPoint p, SDL_Rect r, GuiElement* par, j1Module* list)
+GuiImage* j1Gui::AddGuiImage(iPoint p, SDL_Rect r, GuiElement* par, j1Module* list)
 {
 	GuiImage* image = new GuiImage(p, r,par, list);
 	return image;
 }
 
-GuiElement* j1Gui::AddGuiLabel(p2SString t, _TTF_Font* f, iPoint p, GuiElement* par, j1Module* list)
+GuiLabel* j1Gui::AddGuiLabel(p2SString t, _TTF_Font* f, iPoint p, GuiElement* par, j1Module* list)
 {
 	GuiLabel* label;
 
@@ -125,18 +131,22 @@ GuiElement* j1Gui::AddGuiLabel(p2SString t, _TTF_Font* f, iPoint p, GuiElement* 
 //Draw functions
 void GuiImage::Draw()
 {
-	App->render->Blit(App->gui->GetAtlas(), GetScreenPosition().x - App->render->camera.x, GetScreenPosition().y - App->render->camera.y, &rect);
+	App->render->Blit(App->gui->GetAtlas(),
+					  GetScreenPosition().x - App->render->camera.x, 
+					  GetScreenPosition().y - App->render->camera.y, 
+					  &tex_rect);
 }
 
 void GuiLabel::Draw()
 {
-	//SDL_Texture* label = App->font->Print(text.GetString());
+	
 	tex = App->font->Print(text.GetString());
 	App->render->Blit(tex, GetScreenPosition().x - App->render->camera.x, GetScreenPosition().y - App->render->camera.y, NULL);
 
+	//TODO: something happens in this line, if it's activated it moves the labels, and also, i have to delete de texture when changed, ask rick
 	//This is very warro
-	App->font->CalcSize(text.GetString(), rect.w, rect.h);
-	rect = { GetScreenPosition().x, GetScreenPosition().y, rect.w, rect.h };
+	//App->font->CalcSize(text.GetString(), tex_rect.w, tex_rect.h);
+	//SetLocalRect({ GetScreenPosition().x, GetScreenPosition().y, tex_rect.w, tex_rect.h });
 }
 //
 
@@ -144,8 +154,8 @@ void GuiLabel::Draw()
 bool GuiImage::Update()
 {
 	//put the draw functions here
-	Draw();
 	CheckEvent();
+	Draw();
 	
 	return true;
 }
@@ -153,8 +163,8 @@ bool GuiImage::Update()
 bool GuiLabel::Update()
 {
 	//put the draw functions here
-	Draw();
 	CheckEvent();
+	Draw();
 
 	return true;
 }
@@ -164,7 +174,7 @@ bool GuiLabel::Update()
 
 iPoint GuiElement::GetLocalPosition()
 {
-	return local_pos;
+	return{ local_rect.x, local_rect.y };
 }
 
 iPoint GuiElement::GetScreenPosition()
@@ -172,23 +182,28 @@ iPoint GuiElement::GetScreenPosition()
 	if (parent)
 	{
 		iPoint ret;
-		ret.x = local_pos.x + parent->GetScreenPosition().x;
-		ret.y = local_pos.y + parent->GetScreenPosition().y;
+		ret.x = local_rect.x + parent->GetScreenPosition().x;
+		ret.y = local_rect.y + parent->GetScreenPosition().y;
 		return ret;
 	}
 
-	return local_pos;
+	return{ local_rect.x, local_rect.y };
 }
 
 SDL_Rect GuiElement::GetScreenRect()
 {
-	return{ GetScreenPosition().x, GetScreenPosition().y, rect.w, rect.y };
+	return{ GetScreenPosition().x, GetScreenPosition().y, local_rect.w, local_rect.h };
 }
 SDL_Rect GuiElement::GetLocalRect()
 {
-	return{ local_pos.x, local_pos.y, rect.w, rect.y };
+	return local_rect;
 }
-
+//maybe with x and y
+void GuiElement::SetLocalPosition(iPoint p)
+{
+	local_rect.x = p.x;
+	local_rect.y = p.y;
+}
 bool GuiElement::CheckEvent()
 {
 	bool collision = CheckCollision(App->input->GetMousePosition());
@@ -212,9 +227,11 @@ bool GuiElement::CheckEvent()
 				listener->OnEvent(this, EVENT_MOUSE_LEFTCLICK_DOWN);
 			if (App->input->GetMouseButtonDown(SDL_BUTTON_LEFT) == KEY_UP)
 				listener->OnEvent(this, EVENT_MOUSE_LEFTCLICK_UP);
-			if (App->input->GetMouseButtonDown(SDL_BUTTON_LEFT) == KEY_DOWN)
+			if (App->input->GetMouseButtonDown(SDL_BUTTON_LEFT) == KEY_REPEAT)
+				listener->OnEvent(this, EVENT_MOUSE_LEFTCLICK_REPEAT);
+			if (App->input->GetMouseButtonDown(SDL_BUTTON_RIGHT) == KEY_DOWN)
 				listener->OnEvent(this, EVENT_MOUSE_RIGHTCLICK_DOWN);
-			if (App->input->GetMouseButtonDown(SDL_BUTTON_LEFT) == KEY_UP)
+			if (App->input->GetMouseButtonDown(SDL_BUTTON_RIGHT) == KEY_UP)
 				listener->OnEvent(this, EVENT_MOUSE_RIGHTCLICK_UP);
 		}
 	}
@@ -222,5 +239,29 @@ bool GuiElement::CheckEvent()
 	return true;
 }
 
-// class Gui ---------------------------------------------------
+//maybe i can do this with each of the elements?
+void GuiElement::DrawDebug()
+{
+	SDL_Rect rect = GetScreenRect();
+	rect.x -= App->render->camera.x;
+	rect.y -= App->render->camera.y;
+
+	App->render->DrawLine(rect.x, rect.y, rect.x + rect.w, rect.y, 255, 0, 0);
+	App->render->DrawLine(rect.x, rect.y, rect.x , rect.y + rect.h, 255, 0, 0);
+	App->render->DrawLine(rect.x + rect.w, rect.y, rect.x + rect.w, rect.y + rect.h, 255, 0, 0);
+	App->render->DrawLine(rect.x, rect.y + rect.h, rect.x + rect.w, rect.y + rect.h, 255, 0, 0);
+
+}
+
+//There should be a better way...
+//i'll do it tomorrow...
+/*
+void j1Gui::FindSelectedElement(p2List<GuiElement*> list)
+{
+	//CheckCollision(App->input->GetMousePosition());
+	int index = 0;
+	
+	p2List_item<GuiElement*> item = 
+}
+// class Gui ---------------------------------------------------*/
 
