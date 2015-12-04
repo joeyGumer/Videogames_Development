@@ -184,7 +184,7 @@ public:
 	GuiLabel* AddGuiLabel(p2SString t, _TTF_Font* f, iPoint p, GuiElement* par, j1Module* list);
 
 	//Get selected element
-	void FindSelectedElement(p2List<GuiElement*> list);
+	//bool FindSelectedElement(p2List<GuiElement*> list);
 	SDL_Texture* GetAtlas() const;
 
 private:

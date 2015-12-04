@@ -92,13 +92,15 @@ bool j1Scene::PreUpdate()
 		}
 	}
 
+
 	return true;
 }
 
 // Called each loop iteration
 bool j1Scene::Update(float dt)
 {
-
+	//Gui
+	
 	// -------
 	if(App->input->GetKey(SDL_SCANCODE_L) == KEY_DOWN)
 		App->LoadGame("save_game.xml");
@@ -185,10 +187,7 @@ bool j1Scene::CleanUp()
 }
 
 void j1Scene::OnEvent(GuiElement* element, GUI_Event even)
-{
-	//switch(Gui_Type), there's a different reaction depending on the type
-	//There will be a name differentiation here
-	
+{	
 	if (button == element)
 	{
 		switch (even)

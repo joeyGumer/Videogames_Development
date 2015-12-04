@@ -255,13 +255,28 @@ void GuiElement::DrawDebug()
 
 //There should be a better way...
 //i'll do it tomorrow...
-/*
-void j1Gui::FindSelectedElement(p2List<GuiElement*> list)
+//it's not optimal at all checking the list each frame
+
+/*bool j1Gui::FindSelectedElement(p2List<GuiElement*> list)
 {
 	//CheckCollision(App->input->GetMousePosition());
 	int index = 0;
-	
-	p2List_item<GuiElement*> item = 
+	bool found = false;
+
+	p2List_item<GuiElement*>* item = list.end;
+
+	for (; item; item = item->prev)
+	{
+		if (item->data->CheckCollision(App->input->GetMousePosition()) && !found)
+		{
+			item->data->selected = true;
+			found = true;
+		}
+		else
+			item->data->selected = false;
+	}
+
+	return found;
 }
 // class Gui ---------------------------------------------------*/
 
