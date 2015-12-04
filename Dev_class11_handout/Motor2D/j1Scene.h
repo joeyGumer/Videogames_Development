@@ -7,6 +7,7 @@ struct SDL_Texture;
 class GuiElement;
 class GuiLabel;
 class GuiImage;
+class GuiInputBox;
 
 class j1Scene : public j1Module
 {
@@ -43,6 +44,7 @@ private:
 	bool debug_gui;
 
 	bool dragging;
+	
 	p2List<GuiElement*> gui_elements;
 
 	//Scene Elements
@@ -50,6 +52,7 @@ private:
 	GuiImage* button;
 	GuiLabel* button_title;
 	GuiLabel* window_title;
+	GuiInputBox* input;
 };
 
 #endif // __j1SCENE_H__

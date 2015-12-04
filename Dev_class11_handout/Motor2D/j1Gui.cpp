@@ -87,6 +87,10 @@ GuiLabel::GuiLabel(p2SString t, _TTF_Font* f, iPoint p, GuiElement* par, j1Modul
 
 GuiImage::GuiImage(iPoint p, SDL_Rect r, GuiElement* par, j1Module* list = NULL) : GuiElement(p, r, GUI_IMAGE, par, list)
 {}
+
+//I'm doing and especific constructor, have to change this
+GuiInputBox::GuiInputBox(p2SString t, _TTF_Font* f, iPoint p, SDL_Rect r, GuiElement* par, j1Module* list) : GuiElement(p, r, GUI_INPUTBOX, par, list), text(t, f, { 20, 20 }, this), image({ 0, 0 }, r, this)
+{}
 //-----
 
 // const getter for atlas
@@ -126,6 +130,13 @@ GuiLabel* j1Gui::AddGuiLabel(p2SString t, _TTF_Font* f, iPoint p, GuiElement* pa
 	
 	return label;
 }
+
+GuiInputBox* j1Gui::AddGuiInputBox(p2SString t ,_TTF_Font* f, iPoint p, SDL_Rect r, GuiElement* par, j1Module* list)
+{
+	GuiInputBox* input = new GuiInputBox(t,f, p, r, par, list);
+
+	return input;
+}
 //-----
 
 //Draw functions
@@ -148,6 +159,12 @@ void GuiLabel::Draw()
 	//App->font->CalcSize(text.GetString(), tex_rect.w, tex_rect.h);
 	//SetLocalRect({ GetScreenPosition().x, GetScreenPosition().y, tex_rect.w, tex_rect.h });
 }
+
+void GuiInputBox::Draw()
+{
+	image.Draw();
+	text.Draw();
+}
 //
 
 //Update functions
@@ -164,6 +181,13 @@ bool GuiLabel::Update()
 {
 	//put the draw functions here
 	CheckEvent();
+	Draw();
+
+	return true;
+}
+
+bool GuiInputBox::Update()
+{
 	Draw();
 
 	return true;
@@ -257,26 +281,20 @@ void GuiElement::DrawDebug()
 //i'll do it tomorrow...
 //it's not optimal at all checking the list each frame
 
-/*bool j1Gui::FindSelectedElement(p2List<GuiElement*> list)
+GuiElement* j1Gui::FindSelectedElement(p2List<GuiElement*> list)
 {
 	//CheckCollision(App->input->GetMousePosition());
-	int index = 0;
-	bool found = false;
 
 	p2List_item<GuiElement*>* item = list.end;
 
 	for (; item; item = item->prev)
 	{
-		if (item->data->CheckCollision(App->input->GetMousePosition()) && !found)
+		if (item->data->CheckCollision(App->input->GetMousePosition()))
 		{
-			item->data->selected = true;
-			found = true;
+			return item->data;
 		}
-		else
-			item->data->selected = false;
 	}
-
-	return found;
+	return NULL;
 }
 // class Gui ---------------------------------------------------*/
 

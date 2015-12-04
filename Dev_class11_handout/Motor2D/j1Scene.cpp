@@ -56,9 +56,11 @@ bool j1Scene::Start()
 	button = App->gui->AddGuiImage({ 110 , 300 }, { 642, 169, 229, 69 }, window, this);
 	window_title = App->gui->AddGuiLabel("Window", NULL, { 200, 50 }, window, this);
 	button_title = App->gui->AddGuiLabel("Button", NULL, { 95, 20 }, button, this);
+	input = App->gui->AddGuiInputBox("De texto inicial",NULL, { 50, 100 }, { 488, 569, 344, 61 }, window, this);
 
 	gui_elements.add(window);
 	gui_elements.add(button);
+	gui_elements.add(input);
 	gui_elements.add(window_title);
 	gui_elements.add(button_title);
 
@@ -159,9 +161,15 @@ bool j1Scene::Update(float dt)
 		if (debug_gui)
 			item->data->DrawDebug();
 	}
-	
+
+	/*GuiElement* selected = App->gui->FindSelectedElement(gui_elements);
+	if (selected)
+		selected->CheckEvent();*/
+
 	if (App->input->GetKey(SDL_SCANCODE_I) == KEY_DOWN)
 		debug_gui = !debug_gui;
+
+
 	
 
 	return true;

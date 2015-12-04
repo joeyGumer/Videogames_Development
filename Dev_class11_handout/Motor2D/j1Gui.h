@@ -52,7 +52,6 @@ class GuiElement
 		bool         visible;
 		bool		 mouseIn;
 		//it can be mouseIn but for sure, i put a different variable, "selected"
-		bool         selected;
 		j1Module*    listener;
 
 		//passar a private
@@ -69,7 +68,7 @@ class GuiLabel : public GuiElement
 	public : 
 		//TODO: Manage the font size
 		GuiLabel(p2SString t, _TTF_Font* f, iPoint p, GuiElement* par, j1Module* list);
-		~GuiLabel();
+		~GuiLabel(){}
 
 		void Draw();
 		//this is provisional
@@ -89,7 +88,7 @@ class GuiImage : public GuiElement
 {
 	public:
 		GuiImage(iPoint p, SDL_Rect r, GuiElement* par, j1Module* list);
-		~GuiImage();
+		~GuiImage(){};
 
 		void Draw();
 		bool Update();
@@ -98,11 +97,11 @@ class GuiImage : public GuiElement
 /*class GuiButton : public GuiElement
 {
 	public:
-		/*
+		
 		GuiButton();
 		~GuiButton();
-		*/
-/**
+		
+
 		void Draw();
 		bool Update();
 		//Utils
@@ -114,14 +113,15 @@ class GuiImage : public GuiElement
 		bool clicked;
 
 		GuiImage image;
-};
+};*/
+
 
 class GuiInputBox : public GuiElement
 {
 public:
-	/*
-	GuiInputBox();
-	~GuiInputBox();
+	
+	GuiInputBox(p2SString t,_TTF_Font* f, iPoint p, SDL_Rect r, GuiElement* par, j1Module* list);
+	~GuiInputBox(){};
 	
 
 	void Draw();
@@ -132,10 +132,10 @@ public:
 public:
 	//should this be a Label?
 	GuiLabel text;
-	GuiButton button;
+	GuiImage image;
 	//and a button?
 };
-*/
+
 
 //class Cursor : public 
 
@@ -182,9 +182,10 @@ public:
 	// Gui creation functions
 	GuiImage* AddGuiImage(iPoint p, SDL_Rect r, GuiElement* par,j1Module* list);
 	GuiLabel* AddGuiLabel(p2SString t, _TTF_Font* f, iPoint p, GuiElement* par, j1Module* list);
+	GuiInputBox* AddGuiInputBox(p2SString t, _TTF_Font* f, iPoint p, SDL_Rect r, GuiElement* par, j1Module* list);
 
 	//Get selected element
-	//bool FindSelectedElement(p2List<GuiElement*> list);
+	GuiElement* FindSelectedElement(p2List<GuiElement*> list);
 	SDL_Texture* GetAtlas() const;
 
 private:
