@@ -4,7 +4,7 @@
 #include "j1Render.h"
 #include "j1Gui.h"
 #include "j1Input.h"
-
+#include "j1Textures.h"
 
 #include "SDL_image/include/SDL_image.h"
 #pragma comment( lib, "SDL_image/libx86/SDL2_image.lib" )
@@ -21,7 +21,8 @@ GuiElement::GuiElement(iPoint p, GUI_Type t, GuiElement* par = NULL, j1Module* l
 	draggable = false;
 }
 
-GuiElement::GuiElement(iPoint p, SDL_Rect r, GUI_Type t, GuiElement* par, j1Module* list) : parent(par), tex_rect(r), type(t), listener(list), mouseIn(false)
+GuiElement::GuiElement(iPoint p, SDL_Rect r, GUI_Type t, GuiElement* par, j1Module* list) 
+	: parent(par), tex_rect(r), type(t), listener(list), mouseIn(false)
 {
 	local_rect = { p.x, p.y, tex_rect.w, tex_rect.h };
 	interactable = false;
@@ -29,7 +30,8 @@ GuiElement::GuiElement(iPoint p, SDL_Rect r, GUI_Type t, GuiElement* par, j1Modu
 	draggable = false;
 }
 
-GuiLabel::GuiLabel(p2SString t, _TTF_Font* f, iPoint p, GuiElement* par, j1Module* list = NULL) : GuiElement(p, GUI_LABEL, par, list), text(t), font(f)
+GuiLabel::GuiLabel(p2SString t, _TTF_Font* f, iPoint p, GuiElement* par, j1Module* list = NULL) 
+	: GuiElement(p, GUI_LABEL, par, list), text(t), font(f)
 {
 	//Have to polish the texture sistem in the label
 	tex = App->font->Print(text.GetString());
@@ -38,12 +40,23 @@ GuiLabel::GuiLabel(p2SString t, _TTF_Font* f, iPoint p, GuiElement* par, j1Modul
 	SetLocalRect({ p.x, p.y, tex_rect.w, tex_rect.h });
 }
 
-GuiImage::GuiImage(iPoint p, SDL_Rect r, GuiElement* par, j1Module* list = NULL) : GuiElement(p, r, GUI_IMAGE, par, list)
+GuiImage::GuiImage(iPoint p, SDL_Rect r, GuiElement* par, j1Module* list = NULL) 
+	: GuiElement(p, r, GUI_IMAGE, par, list)
 {}
 
 //I'm doing and especific constructor, have to change this
-GuiInputBox::GuiInputBox(p2SString t, _TTF_Font* f, iPoint p, SDL_Rect r, GuiElement* par, j1Module* list) : GuiElement(p, r, GUI_INPUTBOX, par, list), text(t, f, { 20, 20 }, this), image({ 0, 0 }, r, this)
-{}
+GuiInputBox::GuiInputBox(p2SString t, _TTF_Font* f, iPoint p, int width, SDL_Rect r, iPoint offset, GuiElement* par, j1Module* list)
+	: GuiElement(p, r, GUI_INPUTBOX, par, list), text(t, f, { 0, 0 }, this), image({ offset.x, offset.y }, r, this)
+{
+	SetLocalRect({ p.x, p.y, width, text.GetLocalRect().h});
+	//like this, we move the image
+	image.Center(true, true);
+	inputOn = false;
+	init = false;
+
+	App->font->CalcSize("A", cursor.x, cursor.y);
+	cursor.x = 0;
+}
 //-----
 
 //Draw functions
@@ -57,8 +70,6 @@ void GuiImage::Draw()
 
 void GuiLabel::Draw()
 {
-
-	tex = App->font->Print(text.GetString());
 	App->render->Blit(tex, GetScreenPosition().x - App->render->camera.x, GetScreenPosition().y - App->render->camera.y, NULL);
 
 	//TODO: something happens in this line, if it's activated it moves the labels, and also, i have to delete de texture when changed, ask rick
@@ -71,26 +82,77 @@ void GuiInputBox::Draw()
 {
 	image.Draw();
 	text.Draw();
+
+	if (inputOn)
+	{
+		iPoint pos = GetScreenPosition();
+		App->render->DrawQuad({ pos.x + cursor.x - App->render->camera.x, pos.y - App->render->camera.y, CURSOR_WIDTH, cursor.y }, 255, 255, 255);
+	}
 }
 //
 
 //Update functions
-void GuiImage::Update()
+void GuiImage::Update(GuiElement* hover, GuiElement* focus)
 {
-	//put the draw functions here
-	Draw();
+	//Nothing
 }
 
-void GuiLabel::Update()
+void GuiLabel::Update(GuiElement* hover, GuiElement* focus)
 {
-	//put the draw functions here
+	//Nothing
+}
+
+void GuiInputBox::Update(GuiElement* hover, GuiElement* focus)
+{
+	bool focused = (focus == this);
 	
-	Draw();
-}
+	if (!init && focused)
+	{
+		text.SetText("");
+		init = true;
+	}
 
-void GuiInputBox::Update()
+	if (inputOn != focused)
+	{
+		if (focused)
+			App->input->StartInput(text.text);
+		else
+			App->input->StopInput();
+
+		inputOn = focused;
+	}
+
+	if (inputOn)
+	{
+		p2SString added_text = App->input->GetInput();
+		if (added_text != text.text)
+		{
+			text.SetText(added_text);
+
+			int w = text.GetLocalRect().w;
+			if (w >= 0)
+				cursor.x = w;
+			else
+				cursor.x = 0;
+
+			if (listener)
+				listener->OnEvent(this, EVENT_INPUT_CHANGE);
+		}
+	}
+
+}
+//GuiLabel Functions
+void GuiLabel::SetText(p2SString t)
 {
-	Draw();
+	if (tex)
+		SDL_DestroyTexture(tex);
+
+	text = t.GetString();
+	tex = App->font->Print(text.GetString());
+	
+	uint w, h;
+	App->tex->GetSize(tex, w, h);
+	SetSize(w, h);
 }
 //GuiElement Functions
 
@@ -125,6 +187,37 @@ void GuiElement::SetLocalPosition(iPoint p)
 {
 	local_rect.x = p.x;
 	local_rect.y = p.y;
+}
+
+void GuiElement::Center(bool x, bool y)
+{
+	if (x || y)
+	{
+		int fw, fh;
+		if (parent)
+		{
+			fw = parent->GetLocalRect().w;
+			fh = parent->GetLocalRect().h;
+		}
+		else
+		{
+			fw = App->render->camera.w;
+			fh = App->render->camera.h;
+		}
+		int w, h;
+		SDL_Rect rect = GetLocalRect();
+		if (x)
+			w = fw / 2 - rect.w / 2;
+		else
+			w = rect.x;
+
+		if (y)
+			h = fh / 2 - rect.h / 2;
+		else
+			h = rect.y;
+
+		SetLocalPosition({ w, h });
+	}
 }
 
 bool GuiElement::CheckCollision(iPoint p)

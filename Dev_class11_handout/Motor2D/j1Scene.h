@@ -49,6 +49,7 @@ private:
 	GuiLabel* button_title;
 	GuiLabel* window_title;
 	GuiInputBox* input;
+	GuiInputBox* input2;
 };
 
 #endif // __j1SCENE_H__

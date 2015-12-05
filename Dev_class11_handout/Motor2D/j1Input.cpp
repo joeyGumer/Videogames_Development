@@ -118,13 +118,18 @@ bool j1Input::PreUpdate()
 			break;
 
 			case SDL_MOUSEMOTION:
-				int scale = App->win->GetScale();
+			{	int scale = App->win->GetScale();
 				mouse_motion_x = event.motion.xrel / scale;
 				mouse_motion_y = event.motion.yrel / scale;
 				mouse_x = event.motion.x / scale;
 				mouse_y = event.motion.y / scale;
+			}
 				//LOG("Mouse motion x %d y %d", mouse_motion_x, mouse_motion_y);
 			break;
+
+			case SDL_TEXTINPUT:
+				input_text += event.text.text;
+			break;		
 		}
 	}
 
@@ -171,4 +176,20 @@ iPoint j1Input::GetMouseMotion()
 
 	return ret;
 	
+}
+
+void j1Input::StartInput(p2SString edit_input)
+{
+	SDL_StartTextInput();
+	input_text = edit_input;
+	enable_input = true;
+}
+void j1Input::StopInput()
+{
+	enable_input = false;
+	SDL_StopTextInput();
+}
+p2SString j1Input::GetInput()
+{
+	return input_text;
 }

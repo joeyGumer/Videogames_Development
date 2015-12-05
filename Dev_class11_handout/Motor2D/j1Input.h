@@ -51,6 +51,10 @@ public:
 	// Gather relevant win events
 	bool GetWindowEvent(j1EventWindow ev);
 
+	void StartInput(p2SString edit_input);
+	void StopInput();
+	p2SString GetInput();
+
 	// Check key states (includes mouse and joy buttons)
 	j1KeyState GetKey(int id) const
 	{
@@ -81,6 +85,9 @@ private:
 	int			mouse_motion_y;
 	int			mouse_x;
 	int			mouse_y;
+
+	bool		enable_input;
+	p2SString   input_text;
 };
 
 #endif // __j1INPUT_H__

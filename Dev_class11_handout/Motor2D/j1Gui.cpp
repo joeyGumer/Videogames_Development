@@ -85,6 +85,9 @@ bool j1Gui::PreUpdate()
 	for (item = gui_elements.start; item; item = item->next)
 		if (item->data->interactable)
 			item->data->CheckEvent(hover_element, focus);
+
+	for (item = gui_elements.start; item; item = item->next)
+			item->data->Update(hover_element, focus);
 	
 	return true;
 }
@@ -96,7 +99,7 @@ bool j1Gui::PostUpdate()
 	p2List_item<GuiElement*>* item = gui_elements.start;
 	for (; item; item = item->next)
 	{
-		item->data->Update();
+		item->data->Draw();
 		if (debug)
 			item->data->DrawDebug();
 	}
@@ -142,9 +145,9 @@ GuiLabel* j1Gui::AddGuiLabel(p2SString t, _TTF_Font* f, iPoint p, GuiElement* pa
 	return label;
 }
 
-GuiInputBox* j1Gui::AddGuiInputBox(p2SString t ,_TTF_Font* f, iPoint p, SDL_Rect r, GuiElement* par, j1Module* list)
+GuiInputBox* j1Gui::AddGuiInputBox(p2SString t ,_TTF_Font* f, iPoint p, int width, SDL_Rect r, iPoint offset, GuiElement* par, j1Module* list)
 {
-	GuiInputBox* input = new GuiInputBox(t,f, p, r, par, list);
+	GuiInputBox* input = new GuiInputBox(t, f, p, width, r, offset, par, list);
 	gui_elements.add(input);
 	return input;
 }

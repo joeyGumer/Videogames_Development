@@ -40,7 +40,7 @@ public:
 	GuiImage* AddGuiImage(iPoint p, SDL_Rect r, GuiElement* par,j1Module* list);
 
 	GuiLabel* AddGuiLabel(p2SString t, _TTF_Font* f, iPoint p, GuiElement* par, j1Module* list);
-	GuiInputBox* AddGuiInputBox(p2SString t, _TTF_Font* f, iPoint p, SDL_Rect r, GuiElement* par, j1Module* list);
+	GuiInputBox* AddGuiInputBox(p2SString t, _TTF_Font* f, iPoint p, int width, SDL_Rect r, iPoint offset, GuiElement* par, j1Module* list);
 
 	//Get selected element
 	GuiElement* FindSelectedElement();

@@ -26,7 +26,8 @@ enum GUI_Event
 	EVENT_MOUSE_ENTER,
 	EVENT_MOUSE_EXIT,
 	EVENT_FOCUS_DOWN,
-	EVENT_FOCUS_UP
+	EVENT_FOCUS_UP,
+	EVENT_INPUT_CHANGE,
 };
 
 class GuiElement
@@ -37,21 +38,22 @@ public:
 	~GuiElement(){}
 
 	virtual void Draw(){}
-	virtual void Update(){}
+	virtual void Update(GuiElement* hover, GuiElement* focus){}
 
 	//Utils
 	bool CheckCollision(iPoint p);
 	bool CheckEvent(GuiElement* hover, GuiElement* focus);
 	void DrawDebug();
-
+	void Center(bool x, bool y);
 
 	//Utils
 	iPoint GetLocalPosition();
 	iPoint GetScreenPosition();
 	SDL_Rect GetScreenRect();
 	SDL_Rect GetLocalRect();
+	
 	void SetLocalPosition(iPoint p);
-
+	void SetSize(int w, int h){ local_rect.w = w, local_rect.h = h; }
 	void SetTextureRect(SDL_Rect r){ tex_rect = r; }
 	void SetLocalRect(SDL_Rect r){ local_rect = r; }
 
@@ -89,10 +91,10 @@ public:
 
 	void Draw();
 	//this is provisional
-	void Update();
+	void Update(GuiElement* hover, GuiElement* focus);
 
 	//Utils
-	void SetText(p2SString t){ text = t; }
+	void SetText(p2SString t);
 
 public:
 	p2SString text;
@@ -108,19 +110,19 @@ public:
 	~GuiImage(){};
 
 	void Draw();
-	void Update();
+	void Update(GuiElement* hover, GuiElement* focus);
 };
 
 class GuiInputBox : public GuiElement
 {
 public:
 
-	GuiInputBox(p2SString t, _TTF_Font* f, iPoint p, SDL_Rect r, GuiElement* par, j1Module* list);
+	GuiInputBox(p2SString t, _TTF_Font* f, iPoint p, int width, SDL_Rect r, iPoint offset, GuiElement* par, j1Module* list);
 	~GuiInputBox(){};
 
 
 	void Draw();
-	void Update();
+	void Update(GuiElement* hover, GuiElement* focus);
 	//Utils
 	bool Input();
 
@@ -128,6 +130,10 @@ public:
 	//should this be a Label?
 	GuiLabel text;
 	GuiImage image;
+
+	bool inputOn;
+	bool init;
+	iPoint cursor;
 	//and a button?
 };
 
