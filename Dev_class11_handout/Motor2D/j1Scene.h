@@ -41,11 +41,7 @@ public:
 
 private:
 	SDL_Texture* debug_tex;
-	bool debug_gui;
 
-	bool dragging;
-	
-	p2List<GuiElement*> gui_elements;
 
 	//Scene Elements
 	GuiImage* window;

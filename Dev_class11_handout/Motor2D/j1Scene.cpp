@@ -46,23 +46,27 @@ bool j1Scene::Start()
 	}
 
 	debug_tex = App->tex->Load("maps/path2.png");
-	debug_gui = false;
 	
-	//Gui Elements
-	/*gui_elements.add(App->gui->AddGuiImage({ 350, 60 }, { 642, 169, 229, 69 } ,NULL, this));*/
-	//i_elements.add(App->gui->AddGuiLabel("Hello World", NULL, { 420, 45 },NULL, this));
-
+	
+	//Gui Element
 	window = App->gui->AddGuiImage({ 350, 60 }, { 17, 514, 448, 497 }, NULL, this);
-	button = App->gui->AddGuiImage({ 110 , 300 }, { 642, 169, 229, 69 }, window, this);
-	window_title = App->gui->AddGuiLabel("Window", NULL, { 200, 50 }, window, this);
-	button_title = App->gui->AddGuiLabel("Button", NULL, { 95, 20 }, button, this);
-	input = App->gui->AddGuiInputBox("De texto inicial",NULL, { 50, 100 }, { 488, 569, 344, 61 }, window, this);
+	//Make a function to set conditions?
+	window->interactable = true;
+	window->draggable = true;
 
-	gui_elements.add(window);
-	gui_elements.add(button);
-	gui_elements.add(input);
-	gui_elements.add(window_title);
-	gui_elements.add(button_title);
+	button = App->gui->AddGuiImage({ 110 , 300 }, { 642, 169, 229, 69 }, window, this);
+	button->interactable = true;
+	button->focusable = true;
+	button->draggable = true;
+
+	window_title = App->gui->AddGuiLabel("Window", NULL, { 200, 50 }, window, this);
+
+	button_title = App->gui->AddGuiLabel("Button", NULL, { 95, 20 }, button, this);
+
+	input = App->gui->AddGuiInputBox("De texto inicial",NULL, { 50, 100 }, { 488, 569, 344, 61 }, window, this);
+	input->interactable = true;
+	input->focusable = true;
+	input->draggable = true;
 
 	return true;
 }
@@ -154,24 +158,6 @@ bool j1Scene::Update(float dt)
 
 
 	// Gui ---
-	p2List_item<GuiElement*>* item = gui_elements.start;
-	for (; item; item = item->next)
-	{
-		item->data->Update();
-		if (debug_gui)
-			item->data->DrawDebug();
-	}
-
-	/*GuiElement* selected = App->gui->FindSelectedElement(gui_elements);
-	if (selected)
-		selected->CheckEvent();*/
-
-	if (App->input->GetKey(SDL_SCANCODE_I) == KEY_DOWN)
-		debug_gui = !debug_gui;
-
-
-	
-
 	return true;
 }
 
@@ -211,40 +197,13 @@ void j1Scene::OnEvent(GuiElement* element, GUI_Event even)
 		case EVENT_MOUSE_RIGHTCLICK_UP:
 			break;
 		case EVENT_MOUSE_ENTER:
+		case EVENT_FOCUS_DOWN:
 			element->SetTextureRect({ 0, 113, 229, 69 });
 			break;
 		case EVENT_MOUSE_EXIT:
+		case EVENT_FOCUS_UP:
 			element->SetTextureRect({ 642, 169, 229, 69 });
 			break;
 		}
 	}
-
-	if (even == EVENT_MOUSE_LEFTCLICK_REPEAT)
-	{
-		iPoint p = element->GetLocalPosition();
-		iPoint m = App->input->GetMouseMotion();
-		element->SetLocalPosition(p + m);
-	}
-	/*
-	case GUI_LABEL:
-		switch (even)
-		{
-		case EVENT_MOUSE_LEFTCLICK_DOWN:
-			LOG("Left click");
-			break;
-		case EVENT_MOUSE_LEFTCLICK_UP:
-			break;
-		case EVENT_MOUSE_RIGHTCLICK_DOWN:
-			break;
-		case EVENT_MOUSE_RIGHTCLICK_UP:
-			break;
-		case EVENT_MOUSE_ENTER:
-			((GuiLabel*)element)->SetText("Mouse is Hovering");
-			break;
-		case EVENT_MOUSE_EXIT:
-			((GuiLabel*)element)->SetText("Hello World");
-			break;
-		}
-		break;
-	}*/
 }
