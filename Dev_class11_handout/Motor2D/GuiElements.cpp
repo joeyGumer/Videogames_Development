@@ -19,6 +19,7 @@ GuiElement::GuiElement(iPoint p, GUI_Type t, GuiElement* par = NULL, j1Module* l
 	interactable = false;
 	focusable = false;
 	draggable = false;
+	mask = true;
 }
 
 GuiElement::GuiElement(iPoint p, SDL_Rect r, GUI_Type t, GuiElement* par, j1Module* list) 
@@ -28,6 +29,7 @@ GuiElement::GuiElement(iPoint p, SDL_Rect r, GUI_Type t, GuiElement* par, j1Modu
 	interactable = false;
 	focusable = false;
 	draggable = false;
+	mask = false;
 }
 
 GuiLabel::GuiLabel(p2SString t, _TTF_Font* f, iPoint p, GuiElement* par, j1Module* list = NULL) 
@@ -64,20 +66,29 @@ GuiInputBox::GuiInputBox(p2SString t, _TTF_Font* f, iPoint p, int width, SDL_Rec
 //Draw functions
 void GuiImage::Draw()
 {
+	iPoint p = GetScreenPosition();
+	//For now without mask, it gives some problems
+	/*if (parent && parent->mask)
+	{
+		SDL_Rect r = parent->GetScreenRect();
+
+		App->render->SetViewPort({ r.x , r.y , r.w, r.h });
+		p = GetLocalPosition();
+	}*/
+
+	//Change the camera application to the GetScreenPositionFunction
 	App->render->Blit(App->gui->GetAtlas(),
-		GetScreenPosition().x - App->render->camera.x,
-		GetScreenPosition().y - App->render->camera.y,
+		p.x - App->render->camera.x,
+		p.y - App->render->camera.y,
 		&tex_rect);
+
+	/*if (parent && parent->mask)
+		App->render->ResetViewPort();*/
 }
 
 void GuiLabel::Draw()
 {
 	App->render->Blit(tex, GetScreenPosition().x - App->render->camera.x, GetScreenPosition().y - App->render->camera.y, NULL);
-
-	//TODO: something happens in this line, if it's activated it moves the labels, and also, i have to delete de texture when changed, ask rick
-	//This is very warro
-	//App->font->CalcSize(text.GetString(), tex_rect.w, tex_rect.h);
-	//SetLocalRect({ GetScreenPosition().x, GetScreenPosition().y, tex_rect.w, tex_rect.h });
 }
 
 void GuiInputBox::Draw()
@@ -135,7 +146,6 @@ void GuiInputBox::Update(GuiElement* hover, GuiElement* focus)
 			if (added_text != text.text)
 			{
 				text.SetText(added_text);
-				//Put this in the setText function?
 				if (listener)
 					listener->OnEvent(this, EVENT_INPUT_CHANGE);
 			}
@@ -264,7 +274,7 @@ bool GuiElement::CheckEvent(GuiElement* hover, GuiElement* focus)
 	bool inside = (hover == this);
 	bool focused = (focus == this);
 	
-	//May this go outside of the function?
+
 		if (inside != mouseIn)
 		{
 			if (listener)

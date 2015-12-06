@@ -50,9 +50,9 @@ bool j1Scene::Start()
 	
 	//Gui Element
 	window = App->gui->AddGuiImage({ 350, 60 }, { 17, 514, 448, 497 }, NULL, this);
-	//Make a function to set conditions?
 	window->interactable = true;
 	window->draggable = true;
+	window->mask = true;
 
 	button = App->gui->AddGuiImage({ 110 , 300 }, { 642, 169, 229, 69 }, window, this);
 	button->interactable = true;

@@ -59,7 +59,7 @@ public:
 
 
 public:
-	//Maybe putting a name to identify each element
+	//not used
 	GUI_Type	 type;
 	//int		 id;
 	GuiElement*  parent;
@@ -70,10 +70,8 @@ public:
 	bool		 draggable;
 	bool		 focusable;
 	bool		 focusIn;
-	//it can be mouseIn but for sure, i put a different variable, "selected"
+	bool		 mask;
 	j1Module*    listener;
-
-	//passar a private
 	SDL_Rect     tex_rect;
 
 private:
@@ -90,7 +88,6 @@ public:
 	~GuiLabel(){}
 
 	void Draw();
-	//this is provisional
 	void Update(GuiElement* hover, GuiElement* focus);
 
 	//Utils
@@ -98,7 +95,6 @@ public:
 
 public:
 	p2SString text;
-	//TODO: have to destroy the texture created for the text
 	_TTF_Font* font;
 	SDL_Texture* tex;
 };
@@ -127,7 +123,6 @@ public:
 	bool Input();
 
 public:
-	//should this be a Label?
 	GuiLabel text;
 	GuiImage image;
 
@@ -136,7 +131,6 @@ public:
 	bool	password;
 	iPoint	cursor;
 	int		cursor_pos;
-	//and a button?
 };
 
 

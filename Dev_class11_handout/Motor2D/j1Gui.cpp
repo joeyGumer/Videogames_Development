@@ -159,9 +159,7 @@ GuiInputBox* j1Gui::AddGuiInputBox(p2SString t ,_TTF_Font* f, iPoint p, int widt
 }
 
 GuiElement* j1Gui::FindSelectedElement()
-{
-	//CheckCollision(App->input->GetMousePosition());
-
+{	
 	p2List_item<GuiElement*>* item = gui_elements.end;
 
 	for (; item; item = item->prev)
