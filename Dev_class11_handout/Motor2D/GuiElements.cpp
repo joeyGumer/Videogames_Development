@@ -53,6 +53,8 @@ GuiInputBox::GuiInputBox(p2SString t, _TTF_Font* f, iPoint p, int width, SDL_Rec
 	image.Center(true, true);
 	inputOn = false;
 	init = false;
+	password = false;
+	cursor_pos = 0;
 
 	App->font->CalcSize("A", cursor.x, cursor.y);
 	cursor.x = 0;
@@ -115,28 +117,52 @@ void GuiInputBox::Update(GuiElement* hover, GuiElement* focus)
 	if (inputOn != focused)
 	{
 		if (focused)
-			App->input->StartInput(text.text);
+			App->input->StartInput(text.text, cursor_pos);
 		else
 			App->input->StopInput();
 
 		inputOn = focused;
 	}
 
+
 	if (inputOn)
 	{
-		p2SString added_text = App->input->GetInput();
-		if (added_text != text.text)
+		int changed_cursor;
+		p2SString added_text = App->input->GetInput(changed_cursor);
+		
+		if (added_text != text.text || changed_cursor != cursor_pos)
 		{
-			text.SetText(added_text);
+			if (added_text != text.text)
+			{
+				text.SetText(added_text);
+				//Put this in the setText function?
+				if (listener)
+					listener->OnEvent(this, EVENT_INPUT_CHANGE);
+			}
 
-			int w = text.GetLocalRect().w;
-			if (w >= 0)
-				cursor.x = w;
+			//Password mode
+			//It stills has problems
+			/*if (password)
+			{
+				added_text.Fill('*');
+				text.tex = App->font->Print(added_text.GetString());
+			}*/
+
+			cursor_pos = changed_cursor;
+			if (cursor_pos > 0)
+			{
+				//Don't know why need to do this like this, ask ric
+				p2SString selection(100);
+				selection.Reserve(added_text.Length() * 2);
+				//
+				added_text.SubString(0, cursor_pos, selection);
+				
+				App->font->CalcSize(selection.GetString(), cursor.x, cursor.y);
+			}
 			else
+			{
 				cursor.x = 0;
-
-			if (listener)
-				listener->OnEvent(this, EVENT_INPUT_CHANGE);
+			}
 		}
 	}
 

@@ -128,8 +128,41 @@ bool j1Input::PreUpdate()
 			break;
 
 			case SDL_TEXTINPUT:
-				input_text += event.text.text;
-			break;		
+				input_text.Insert(cursor_pos,event.text.text);
+				cursor_pos += strlen(event.text.text);
+			break;
+
+			case SDL_KEYDOWN:
+				if (enable_input)
+				{
+					//Ask ric why do i need to use the virtual keys
+					switch (event.key.keysym.sym)
+					{
+					case SDLK_BACKSPACE:
+						input_text.Cut(cursor_pos - 1, cursor_pos -1);
+						if (cursor_pos > 0)
+							cursor_pos--;
+					break;
+					case SDLK_DELETE:
+						input_text.Cut(cursor_pos, cursor_pos);
+					break;
+					case SDLK_RIGHT:
+						if (cursor_pos < input_text.Length())
+							cursor_pos++;
+					break;
+					case SDLK_LEFT:
+						if (cursor_pos >0)
+							cursor_pos--;
+					break;
+					case SDLK_HOME:
+						cursor_pos = 0;
+					break;
+					case SDLK_END:
+						cursor_pos = input_text.Length();
+					break;
+
+					}
+				}
 		}
 	}
 
@@ -178,10 +211,12 @@ iPoint j1Input::GetMouseMotion()
 	
 }
 
-void j1Input::StartInput(p2SString edit_input)
+void j1Input::StartInput(p2SString edit_input, int pos)
 {
 	SDL_StartTextInput();
+	//I do this so it can have lots of input boxes
 	input_text = edit_input;
+	cursor_pos = pos;
 	enable_input = true;
 }
 void j1Input::StopInput()
@@ -189,7 +224,8 @@ void j1Input::StopInput()
 	enable_input = false;
 	SDL_StopTextInput();
 }
-p2SString j1Input::GetInput()
+p2SString j1Input::GetInput(int& cursor)
 {
+	cursor = cursor_pos;
 	return input_text;
 }

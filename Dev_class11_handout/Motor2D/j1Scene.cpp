@@ -70,6 +70,7 @@ bool j1Scene::Start()
 	input2->interactable = true;
 	input2->focusable = true;
 	input2->draggable = true;
+	input2->password = true;
 	input2->Center(true, true);
 
 	window_title = App->gui->AddGuiLabel("Window", NULL, { 200, 50 }, window, this);

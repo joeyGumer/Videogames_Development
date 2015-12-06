@@ -131,9 +131,11 @@ public:
 	GuiLabel text;
 	GuiImage image;
 
-	bool inputOn;
-	bool init;
-	iPoint cursor;
+	bool	inputOn;
+	bool	init;
+	bool	password;
+	iPoint	cursor;
+	int		cursor_pos;
 	//and a button?
 };
 
