@@ -112,6 +112,12 @@ bool j1Gui::CleanUp()
 {
 	LOG("Freeing GUI");
 
+	p2List_item<GuiElement*>* item = gui_elements.start;
+	for (; item; item = item->next)
+		RELEASE(item->data);
+
+	gui_elements.clear();
+
 	return true;
 }
 

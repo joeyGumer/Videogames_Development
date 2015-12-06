@@ -57,7 +57,7 @@ bool j1Scene::Start()
 	button = App->gui->AddGuiImage({ 110 , 300 }, { 642, 169, 229, 69 }, window, this);
 	button->interactable = true;
 	button->focusable = true;
-	//button->draggable = ;
+	button->draggable = true;
 	button->Center(true, false);
 
 	input = App->gui->AddGuiInputBox("Your name", NULL, { 50, 100 }, 315, { 488, 569, 344, 61 }, { -13, -14 }, window, this);
