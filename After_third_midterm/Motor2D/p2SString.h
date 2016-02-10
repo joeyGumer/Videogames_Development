@@ -231,7 +231,7 @@ public:
 		return size;
 	}
 
-	bool Cut(unsigned int begin, unsigned int end = 0)
+	bool Cut(unsigned int begin, unsigned int end)
 	{
 		uint len = Length();
 
@@ -398,14 +398,6 @@ public:
 			return true;
 		}
 		return false;
-	}
-
-	void ToLower()
-	{
-		for (int n = 0; n < strlen(str); n++)
-		{
-			str[n] = tolower(str[n]);
-		}
 	}
 private:
 
