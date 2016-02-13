@@ -16,13 +16,7 @@ j1Scene::j1Scene() : j1Module()
 {
 	name.create("scene");
 
-	/*window =  NULL;
-	slider = NULL;
-	value_label = NULL;
-		
-	button = NULL;
-	button_title = window_title = NULL;
-	*/
+	/*Pointers Here*/
 }
 
 // Destructor
@@ -46,8 +40,6 @@ bool j1Scene::Awake(pugi::xml_node& conf)
 		bool drag = ui_label.attribute("drag").as_bool();
 
 		GuiLabel* tmp = App->gui->AddGuiLabel(text.GetString(), NULL, { x, y }, NULL, this);
-		tmp->draggable = drag;
-		tmp->interactable = true;
 	}
 	//
 
@@ -194,49 +186,7 @@ bool j1Scene::CleanUp()
 
 void j1Scene::OnEvent(GuiElement* element, GUI_Event even)
 {	
-	/*if (button == element)
-	{
-		switch (even)
-		{
-		case EVENT_MOUSE_LEFTCLICK_DOWN:
-			element->SetTextureRect({ 411, 169, 229, 69 });
-			break;
-		case EVENT_MOUSE_LEFTCLICK_UP:
-			element->SetTextureRect({ 0, 113, 229, 69 });
-			break;
-		case EVENT_MOUSE_RIGHTCLICK_DOWN:
-			break;
-		case EVENT_MOUSE_RIGHTCLICK_UP:
-			break;
-		case EVENT_MOUSE_ENTER:
-		case EVENT_FOCUS_DOWN:
-			element->SetTextureRect({ 0, 113, 229, 69 });
-			break;
-		case EVENT_MOUSE_EXIT:
-		case EVENT_FOCUS_UP:
-			element->SetTextureRect({ 642, 169, 229, 69 });
-			break;
-		}
-	}*/
-	/*
-	if (slider == element)
-		switch (even)
-	{
-		case EVENT_MOUSE_LEFTCLICK_DOWN:
-			slider->clicking = true;
-			break;
-		case EVENT_MOUSE_LEFTCLICK_UP:
-			slider->clicking = false;
-			break;
-		//
-		case EVENT_SLIDER_CHANGE:
-		{
-			p2SString value_string("Value : %0.2f", slider->GetValue());
-			value_label->SetText(value_string);
-		}
-		break;
-	}*/
-
+	/*Event switch here*/
 	
 	//----
 }

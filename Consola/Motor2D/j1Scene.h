@@ -43,21 +43,9 @@ public:
 private:
 	SDL_Texture* debug_tex;
 
-
-	//Scene Elements
-	//GuiImage* window;
-	/*
-	GuiImage* button;
-	*/
 	GuiLabel* button_title;
 	GuiLabel* window_title;
-	/*
-	GuiInputBox* input;
-	GuiInputBox* input2;*/
-	//
-	//GuiSlider* slider;
-	//GuiLabel* value_label;
-	//p2List<GuiLabel*> labels;
+	
 
 	pugi::xml_node scene_node;
 };

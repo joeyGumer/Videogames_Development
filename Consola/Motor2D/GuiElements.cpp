@@ -46,6 +46,15 @@ GuiImage::GuiImage(iPoint p, SDL_Rect r, GuiElement* par, j1Module* list = NULL)
 	: GuiElement(p, r, GUI_IMAGE, par, list)
 {}
 
+GuiImage::GuiImage(p2Point<int> pos, SDL_Rect r, SDL_Color col, Gui_Element* par) : Gui_Element(pos, GUI_IMAGE, par)
+{
+	section = r;
+	SetRectWH(r.w, r.h);
+	color = col;
+	texture = NULL;
+
+}
+
 //I'm doing and especific constructor, have to change this
 GuiInputBox::GuiInputBox(p2SString t, _TTF_Font* f, iPoint p, int width, SDL_Rect r, iPoint offset, GuiElement* par, j1Module* list)
 	: GuiElement(p, r, GUI_INPUTBOX, par, list), text(t, f, { 0, 0 }, this), image({ offset.x, offset.y }, r, this)
