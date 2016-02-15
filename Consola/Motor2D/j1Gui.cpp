@@ -97,9 +97,13 @@ bool j1Gui::PostUpdate()
 {
 
 	p2List_item<GuiElement*>* item = gui_elements.start;
-	for (; item; item = item->next)
+	for (; item ; item = item->next)
 	{
-		item->data->Draw();
+		if (item->data->visible)
+		{
+			item->data->Draw();
+		}
+
 		if (debug)
 			item->data->DrawDebug();
 	}
@@ -136,6 +140,12 @@ GuiImage* j1Gui::AddGuiImage(iPoint p, SDL_Rect r, GuiElement* par, j1Module* li
 	return image;
 }
 
+GuiImage* j1Gui::AddGuiImage(iPoint p, SDL_Rect r, SDL_Color c, GuiElement* par, j1Module* list)
+{
+	GuiImage* image = new GuiImage(p, r, c, par, list);
+	gui_elements.add(image);
+	return image;
+}
 
 GuiLabel* j1Gui::AddGuiLabel(p2SString t, _TTF_Font* f, iPoint p, GuiElement* par, j1Module* list)
 {
@@ -157,6 +167,14 @@ GuiInputBox* j1Gui::AddGuiInputBox(p2SString t ,_TTF_Font* f, iPoint p, int widt
 	gui_elements.add(input);
 	return input;
 }
+
+GuiInputBox* j1Gui::AddGuiInputBox(p2SString t, _TTF_Font* f, iPoint p, int width, SDL_Rect r, SDL_Color c, iPoint offset, GuiElement* par, j1Module* list)
+{
+	GuiInputBox* input = new GuiInputBox(t, f, p, width, r, c, offset, par, list);
+	gui_elements.add(input);
+	return input;
+}
+
 
 GuiElement* j1Gui::FindSelectedElement()
 {	

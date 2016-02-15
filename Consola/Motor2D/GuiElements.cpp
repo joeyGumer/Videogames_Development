@@ -33,7 +33,8 @@ GuiElement::GuiElement(iPoint p, SDL_Rect r, GUI_Type t, GuiElement* par, j1Modu
 }
 
 GuiLabel::GuiLabel(p2SString t, _TTF_Font* f, iPoint p, GuiElement* par, j1Module* list = NULL) 
-	: GuiElement(p, GUI_LABEL, par, list), text(t), font(f)
+	: GuiElement(p, GUI_LABEL, par, list)
+	, text(t), font(f)
 {
 	//Have to polish the texture sistem in the label
 	tex = App->font->Print(text.GetString());
@@ -44,22 +45,40 @@ GuiLabel::GuiLabel(p2SString t, _TTF_Font* f, iPoint p, GuiElement* par, j1Modul
 
 GuiImage::GuiImage(iPoint p, SDL_Rect r, GuiElement* par, j1Module* list = NULL) 
 	: GuiElement(p, r, GUI_IMAGE, par, list)
+	, section(r)
+{
+	texture = App->gui->GetAtlas();
+	color = { 0, 0, 0, 0 };
+}
+
+GuiImage::GuiImage(iPoint p, SDL_Rect r, SDL_Color c, GuiElement* par, j1Module* list = NULL)
+	: GuiElement(p, r, GUI_IMAGE, par, list)
+	, section(r), color(c), texture(NULL)
 {}
 
-GuiImage::GuiImage(p2Point<int> pos, SDL_Rect r, SDL_Color col, Gui_Element* par) : Gui_Element(pos, GUI_IMAGE, par)
-{
-	section = r;
-	SetRectWH(r.w, r.h);
-	color = col;
-	texture = NULL;
-
-}
 
 //I'm doing and especific constructor, have to change this
 GuiInputBox::GuiInputBox(p2SString t, _TTF_Font* f, iPoint p, int width, SDL_Rect r, iPoint offset, GuiElement* par, j1Module* list)
 	: GuiElement(p, r, GUI_INPUTBOX, par, list), text(t, f, { 0, 0 }, this), image({ offset.x, offset.y }, r, this)
 {
 	SetLocalRect({ p.x, p.y, width, text.GetLocalRect().h});
+	//like this, we move the image
+	image.Center(true, true);
+	inputOn = false;
+	init = false;
+	password = false;
+	cursor_pos = 0;
+
+	App->font->CalcSize("A", cursor.x, cursor.y);
+	cursor.x = 0;
+}
+
+GuiInputBox::GuiInputBox(p2SString t, _TTF_Font* f, iPoint p, int width, SDL_Rect r, SDL_Color c, iPoint offset, GuiElement* par, j1Module* list)
+	: GuiElement(p, r, GUI_INPUTBOX, par, list)
+	, text(t, f, { 0, 0 }, this), image({ offset.x, offset.y }, r, c, this)
+{
+	SetLocalRect({ p.x, p.y, width, text.GetLocalRect().h });
+	
 	//like this, we move the image
 	image.Center(true, true);
 	inputOn = false;
@@ -86,10 +105,21 @@ void GuiImage::Draw()
 	}*/
 
 	//Change the camera application to the GetScreenPositionFunction
-	App->render->Blit(App->gui->GetAtlas(),
-		p.x - App->render->camera.x,
-		p.y - App->render->camera.y,
-		&tex_rect);
+	if (visible)
+	if (texture)
+	{
+		App->render->Blit(App->gui->GetAtlas(),
+			p.x - App->render->camera.x,
+			p.y - App->render->camera.y,
+			&tex_rect);
+	}
+	else
+	{
+		App->render->DrawQuad({ p.x - App->render->camera.x, 
+								p.y - App->render->camera.y, 
+								section.w, section.h }, 
+								color.r, color.g, color.b, color.a);
+	}
 
 	/*if (parent && parent->mask)
 		App->render->ResetViewPort();*/

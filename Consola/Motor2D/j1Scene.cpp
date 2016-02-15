@@ -63,6 +63,7 @@ bool j1Scene::Start()
 	
 	//
 
+	//App->gui->AddGuiImage({ 0, 0 }, { 5, 116, 218, 60 }, NULL, this);
 	
 	//---------
 
@@ -162,6 +163,8 @@ bool j1Scene::Update(float dt)
 
 
 	// Gui ---
+
+	
 	return true;
 }
 

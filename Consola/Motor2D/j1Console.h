@@ -3,6 +3,9 @@
 
 #include "j1Module.h"
 
+class GuiImage;
+class GuiInputBox;
+
 class j1Console : public j1Module
 {
 public:
@@ -27,6 +30,10 @@ public:
 
 	//Called before quitting
 	bool CleanUp();
+
+private:
+	GuiImage* message_img;
+	GuiInputBox* input;
 };
 
 

@@ -105,10 +105,18 @@ class GuiImage : public GuiElement
 {
 public:
 	GuiImage(iPoint p, SDL_Rect r, GuiElement* par, j1Module* list);
+	GuiImage(iPoint p, SDL_Rect r, SDL_Color c, GuiElement* par, j1Module* list);
+
 	~GuiImage(){};
 
 	void Draw();
 	void Update(GuiElement* hover, GuiElement* focus);
+
+public:
+	
+	SDL_Rect section;
+	SDL_Color color;
+	SDL_Texture* texture;
 };
 
 class GuiInputBox : public GuiElement
@@ -116,6 +124,7 @@ class GuiInputBox : public GuiElement
 public:
 
 	GuiInputBox(p2SString t, _TTF_Font* f, iPoint p, int width, SDL_Rect r, iPoint offset, GuiElement* par, j1Module* list);
+	GuiInputBox(p2SString t, _TTF_Font* f, iPoint p, int width, SDL_Rect r, SDL_Color c, iPoint offset, GuiElement* par, j1Module* list);
 	~GuiInputBox(){};
 
 
