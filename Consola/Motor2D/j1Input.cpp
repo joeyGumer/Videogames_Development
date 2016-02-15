@@ -52,6 +52,9 @@ bool j1Input::PreUpdate()
 	
 	const Uint8* keys = SDL_GetKeyboardState(NULL);
 
+	//Alert, this is for sending messages wwith the input
+	sent = false;
+
 	for(int i = 0; i < MAX_KEYS; ++i)
 	{
 		if(keys[i] == 1)
@@ -160,9 +163,14 @@ bool j1Input::PreUpdate()
 					case SDLK_END:
 						cursor_pos = input_text.Length();
 					break;
-
+					//ALERT : if you click return it will delete the actual text, so wherever you are going to insert the text you have to be sure to store that text
+					case SDLK_RETURN:
+						input_text = "";
+						cursor_pos = 0;
+						sent = true;
+					break;
 					}
-				}
+				} 
 		}
 	}
 
@@ -224,8 +232,9 @@ void j1Input::StopInput()
 	enable_input = false;
 	SDL_StopTextInput();
 }
-p2SString j1Input::GetInput(int& cursor)
+bool j1Input::GetInput(int& cursor, p2SString& added_text)
 {
 	cursor = cursor_pos;
-	return input_text;
+	added_text = input_text;
+	return sent;
 }

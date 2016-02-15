@@ -140,8 +140,10 @@ public:
 	bool	inputOn;
 	bool	init;
 	bool	password;
+	bool	sent;
 	iPoint	cursor;
 	int		cursor_pos;
+	p2SString sent_text;
 };
 
 

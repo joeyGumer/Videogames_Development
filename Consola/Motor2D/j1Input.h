@@ -53,7 +53,7 @@ public:
 
 	void StartInput(p2SString edit_input, int pos);
 	void StopInput();
-	p2SString GetInput(int& cursor);
+	bool GetInput(int& cursor, p2SString& added_text);
 
 	// Check key states (includes mouse and joy buttons)
 	j1KeyState GetKey(int id) const
@@ -87,6 +87,7 @@ private:
 	int			mouse_y;
 
 	bool		enable_input;
+	bool		sent;
 	p2SString   input_text;
 	int			cursor_pos;
 };

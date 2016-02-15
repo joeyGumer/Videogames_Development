@@ -2,9 +2,17 @@
 #define __J1CONSOLE_H__
 
 #include "j1Module.h"
+#include "p2List.h"
 
+#define INTERLINE 20
+#define CONS_HEIGHT 200
+
+enum GUI_EVENT;
+
+class GuiElement;
 class GuiImage;
 class GuiInputBox;
+class GuiLabel;
 
 class j1Console : public j1Module
 {
@@ -25,15 +33,27 @@ public:
 	//Called before all updates
 	bool PreUpdate();
 
+	//Called each loop iteration
+	bool Update(float dt);
+
 	//Called after all updates
 	bool PostUpdate();
 
 	//Called before quitting
 	bool CleanUp();
 
-private:
+	//Check GUI Events
+	void OnEvent(GuiElement* element, GUI_Event even);
+
+
+public:
+
+	p2List<GuiLabel*> messages;
 	GuiImage* message_img;
 	GuiInputBox* input;
+	p2SString last_msg;
+	
+	
 };
 
 

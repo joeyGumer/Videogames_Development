@@ -16,6 +16,7 @@
 GuiElement::GuiElement(iPoint p, GUI_Type t, GuiElement* par = NULL, j1Module* list = NULL) : type(t), parent(par), listener(list), mouseIn(false)
 {
 	local_rect = { p.x, p.y, tex_rect.w, tex_rect.h };
+	visible = true;
 	interactable = false;
 	focusable = false;
 	draggable = false;
@@ -67,6 +68,8 @@ GuiInputBox::GuiInputBox(p2SString t, _TTF_Font* f, iPoint p, int width, SDL_Rec
 	inputOn = false;
 	init = false;
 	password = false;
+	sent = false;
+
 	cursor_pos = 0;
 
 	App->font->CalcSize("A", cursor.x, cursor.y);
@@ -84,6 +87,8 @@ GuiInputBox::GuiInputBox(p2SString t, _TTF_Font* f, iPoint p, int width, SDL_Rec
 	inputOn = false;
 	init = false;
 	password = false;
+	sent = false;
+
 	cursor_pos = 0;
 
 	App->font->CalcSize("A", cursor.x, cursor.y);
@@ -105,7 +110,7 @@ void GuiImage::Draw()
 	}*/
 
 	//Change the camera application to the GetScreenPositionFunction
-	if (visible)
+	
 	if (texture)
 	{
 		App->render->Blit(App->gui->GetAtlas(),
@@ -115,15 +120,16 @@ void GuiImage::Draw()
 	}
 	else
 	{
-		App->render->DrawQuad({ p.x - App->render->camera.x, 
-								p.y - App->render->camera.y, 
-								section.w, section.h }, 
-								color.r, color.g, color.b, color.a);
+		App->render->DrawQuad({ p.x - App->render->camera.x,
+			p.y - App->render->camera.y,
+			section.w, section.h },
+			color.r, color.g, color.b, color.a);
 	}
+}
 
 	/*if (parent && parent->mask)
 		App->render->ResetViewPort();*/
-}
+
 
 void GuiLabel::Draw()
 {
@@ -154,7 +160,7 @@ void GuiLabel::Update(GuiElement* hover, GuiElement* focus)
 	//Nothing
 	if (!tex)
 	{
-		tex = App->font->Print(text.GetString());
+			tex = App->font->Print(text.GetString());
 	}
 }
 
@@ -182,8 +188,15 @@ void GuiInputBox::Update(GuiElement* hover, GuiElement* focus)
 	if (inputOn)
 	{
 		int changed_cursor;
-		p2SString added_text = App->input->GetInput(changed_cursor);
+		p2SString added_text;
+		sent = App->input->GetInput(changed_cursor, added_text);
 		
+		if (sent)
+		{
+			sent_text = text.text;
+			sent = false;
+		}
+
 		if (added_text != text.text || changed_cursor != cursor_pos)
 		{
 			if (added_text != text.text)
@@ -192,14 +205,6 @@ void GuiInputBox::Update(GuiElement* hover, GuiElement* focus)
 				if (listener)
 					listener->OnEvent(this, EVENT_INPUT_CHANGE);
 			}
-
-			//Password mode
-			//It stills has problems
-			/*if (password)
-			{
-				added_text.Fill('*');
-				text.tex = App->font->Print(added_text.GetString());
-			}*/
 
 			cursor_pos = changed_cursor;
 			if (cursor_pos > 0)
