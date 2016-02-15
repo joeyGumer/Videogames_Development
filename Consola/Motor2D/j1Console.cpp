@@ -26,6 +26,8 @@ bool j1Console::Start()
 {
 	//Put it with the width and height of the screen
 	//This is an example
+	active = false;
+
 	message_img = App->gui->AddGuiImage({ 0, 0 }, { 0, 0, 1024, CONS_HEIGHT }, { 100, 100, 100, 200 }, NULL, this);
 	message_img->visible = false;
 
@@ -37,6 +39,7 @@ bool j1Console::Start()
 
 bool j1Console::CleanUp()
 {
+	messages.clear();
 	return true;
 }
 
@@ -48,22 +51,32 @@ bool j1Console::PreUpdate()
 bool j1Console::Update(float dt)
 {
 
-	if (App->input->GetKey(SDL_SCANCODE_LSHIFT) == KEY_DOWN)
+	if ((App->input->GetKey(SDL_SCANCODE_LSHIFT) == KEY_REPEAT && App->input->GetKey(SDL_SCANCODE_LCTRL) == KEY_DOWN) ||
+		(App->input->GetKey(SDL_SCANCODE_LSHIFT) == KEY_DOWN && App->input->GetKey(SDL_SCANCODE_LCTRL) == KEY_REPEAT))
 	{
+		active = !active;
 		message_img->visible = !message_img->visible;
 		input->visible = input->interactable = input->focusable = !input->visible;
-	}
-
-	if (App->input->GetKey(SDL_SCANCODE_RETURN) == KEY_DOWN)
-	{
-		//App->gui->AddGuiLabel
-		messages.add(App->gui->AddGuiLabel(input->sent_text, App->font->default, { 0, CONS_HEIGHT}, message_img, this));
-		
 
 		for (p2List_item<GuiLabel*>* item = messages.start; item; item = item->next)
 		{
-			iPoint pos = item->data->GetLocalPosition();
-			item->data->SetLocalPosition({pos.x, pos.y - INTERLINE});
+			item->data->visible = !item->data->visible;
+		}
+	}
+
+	if (active)
+	{
+		if (App->input->GetKey(SDL_SCANCODE_RETURN) == KEY_DOWN)
+		{
+			//App->gui->AddGuiLabel
+			messages.add(App->gui->AddGuiLabel(input->sent_text, App->font->default, { 0, CONS_HEIGHT }, message_img, this));
+
+
+			for (p2List_item<GuiLabel*>* item = messages.start; item; item = item->next)
+			{
+				iPoint pos = item->data->GetLocalPosition();
+				item->data->SetLocalPosition({ pos.x, pos.y - INTERLINE });
+			}
 		}
 	}
 	return true;

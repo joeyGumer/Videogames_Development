@@ -48,10 +48,10 @@ public:
 
 public:
 
-	p2List<GuiLabel*> messages;
-	GuiImage* message_img;
-	GuiInputBox* input;
-	p2SString last_msg;
+	p2List<GuiLabel*>	messages;
+	GuiImage*			message_img;
+	GuiInputBox*		input;
+	bool				active;
 	
 	
 };
